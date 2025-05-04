@@ -11,13 +11,9 @@ const Footer: React.FC<{ className?: string }> = ({ className }) => {
   return (
     <div
       id="footer"
-      className={`mt-auto flex w-full flex-col space-y-4 bg-white p-3 dark:bg-gray-900 dark:text-gray-50 md:flex-row md:items-center md:space-y-0 md:space-x-3 md:p-5 ${className}`}
+      className={`w-full border-t border-gray-200 bg-white p-4 text-center text-sm font-medium text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 ${className}`}
     >
-      <div className="flex flex-col space-y-4 md:flex-row md:items-center md:space-y-0 md:space-x-3">
-        <div>
-          <div dangerouslySetInnerHTML={{ __html: siteConfig.footer }}></div>
-        </div>
-      </div>
+      <div dangerouslySetInnerHTML={{ __html: siteConfig.footer }}></div>
     </div>
   )
 }
