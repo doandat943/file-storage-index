@@ -7,7 +7,13 @@ import Link from 'next/link'
 import { useCookies } from 'react-cookie'
 
 // https://headlessui.dev/react/menu#integrating-with-next-js
-const CustomLink = ({ href, children, as, locale, ...props }): JSX.Element => {
+const CustomLink = ({ href, children, as, locale, ...props }: {
+  href: any;
+  children: React.ReactNode;
+  as?: string;
+  locale?: string;
+  [key: string]: any;
+}) => {
   return (
     <Link href={href} as={as} locale={locale} {...props}>
       {children}

@@ -408,7 +408,7 @@ const FileListing: FC<{ query?: ParsedUrlQuery }> = ({ query }) => {
           return <MarkdownPreview file={file} path={path} />
 
         case preview.video:
-          return <VideoPreview file={file} />
+          return <VideoPreview file={file} path={path} />
 
         case preview.audio:
           return <AudioPreview file={file} />

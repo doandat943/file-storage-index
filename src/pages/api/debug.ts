@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         folderStructure: folderContents
       }
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in debug API:', error)
     res.status(500).json({ 
       error: 'Internal server error', 

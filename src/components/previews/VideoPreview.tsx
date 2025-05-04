@@ -1,7 +1,6 @@
 import { FC, useRef, useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
-import dynamic from 'next/dynamic'
 import Hls from 'hls.js'
 
 import DownloadButtonGroup from '../DownloadBtnGtoup'
@@ -13,9 +12,6 @@ import { getStoredToken } from '../../utils/protectedRouteHandler'
 import { getBaseUrl } from '../../utils/getBaseUrl'
 import useFileContent from '../../utils/fetchOnMount'
 import { fetcher } from '../../utils/fetchWithSWR'
-
-// Import Plyr with SSR disabled (client-side only)
-const Plyr = dynamic(() => import('plyr'), { ssr: false })
 
 interface VideoPreviewProps {
   file: any
@@ -55,7 +51,7 @@ const VideoPlayer: FC<{ videoPlayerRef: any; src: string; subtitles: string[]; f
         track.srclang = `${subtitles[i].split('.').at(-1) ?? 'en'}`
         track.src = `${proxy ? '/api/proxy?' : '/api/raw/?path='}${subtitles[i]}`
         track.addEventListener('load', () => {
-          track.mode = 'showing'
+          // HTMLTrackElement doesn't have a mode property, only the TextTrack object does
           video.textTracks[i].mode = 'showing'
         })
         video.appendChild(track)
@@ -78,18 +74,24 @@ const VideoPlayer: FC<{ videoPlayerRef: any; src: string; subtitles: string[]; f
 
     // Initialize Plyr if not initialized
     if (!plyrInitialized && videoPlayerRef.current) {
-      const plyrOptions = {
-        keyboard: { global: true },
-        tooltips: { controls: true, seek: true },
-        captions: { active: true, language: 'auto', update: true },
-      }
-      
-      const player = new Plyr(videoPlayerRef.current, plyrOptions)
-      setPlyrInitialized(true)
-      
-      return () => {
-        player.destroy()
-      }
+      // Import Plyr dynamically only when needed on the client side
+      import('plyr').then((PlyrModule) => {
+        const Plyr = PlyrModule.default
+        const plyrOptions = {
+          keyboard: { global: true },
+          tooltips: { controls: true, seek: true },
+          captions: { active: true, language: 'auto', update: true },
+        }
+        
+        const player = new Plyr(videoPlayerRef.current, plyrOptions)
+        setPlyrInitialized(true)
+        
+        return () => {
+          player?.destroy()
+        }
+      }).catch(err => {
+        console.error('Failed to load Plyr:', err)
+      })
     }
   }, [videoPlayerRef, src, subtitles, fileName, proxy, plyrInitialized, t])
 
@@ -115,6 +117,7 @@ const VideoPreview: FC<VideoPreviewProps> = ({ file, path, proxy = false }) => {
   const router = useRouter()
   const { t } = useTranslation()
   const videoPlayerRef = useRef<HTMLVideoElement>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const proxyUrl = proxy ? '/api/proxy?url=' : '/api/raw?path='
   const videoUrl = `${getBaseUrl()}${proxyUrl}${encodeURIComponent(
@@ -159,7 +162,7 @@ const VideoPreview: FC<VideoPreviewProps> = ({ file, path, proxy = false }) => {
   return (
     <>
       <PreviewContainer>
-        <div className="aspect-video w-full">
+        <div className="flex h-full w-full items-center justify-center">
           <VideoPlayer
             videoPlayerRef={videoPlayerRef}
             src={videoUrl}
@@ -171,7 +174,7 @@ const VideoPreview: FC<VideoPreviewProps> = ({ file, path, proxy = false }) => {
       </PreviewContainer>
       <DownloadBtnContainer>
         <DownloadButtonGroup />
-        <CustomEmbedLinkMenu path={videoUrl} />
+        <CustomEmbedLinkMenu path={videoUrl} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </DownloadBtnContainer>
     </>
   )

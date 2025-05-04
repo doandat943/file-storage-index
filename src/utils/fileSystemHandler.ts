@@ -151,7 +151,7 @@ export async function calculateDirectorySize(directoryPath: string): Promise<num
     }
     
     return size;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error calculating directory size:', error);
     return 0;
   }
@@ -206,7 +206,7 @@ export async function getFolderContents(folderPath: string): Promise<OdFolderObj
       '@odata.context': 'local',
       value: items
     }
-  } catch (error) {
+  } catch (error: any) {
     // Only log real errors, not normal control flow exceptions
     if (error.message !== 'Folder not found' && error.message !== 'Not a directory') {
       console.error('Error getting folder contents:', error)
@@ -232,7 +232,7 @@ export async function getFileInfo(filePath: string): Promise<OdFileObject> {
     }
     
     return fileToOdFile(filePath, stats, path.basename(filePath))
-  } catch (error) {
+  } catch (error: any) {
     // Only log real errors, not normal control flow exceptions
     if (error.message !== 'File not found' && error.message !== 'Not a file') {
       console.error('Error getting file info:', error)
@@ -258,7 +258,7 @@ export async function readFileContent(filePath: string): Promise<Buffer> {
     }
     
     return await fsReadFile(absolutePath)
-  } catch (error) {
+  } catch (error: any) {
     // Only log real errors, not normal control flow exceptions
     if (error.message !== 'File not found' && error.message !== 'Not a file') {
       console.error('Error reading file:', error)
@@ -279,7 +279,7 @@ export async function writeFile(relativePath: string, content: Buffer): Promise<
     }
     
     await fsWriteFile(absolutePath, content)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error writing file:', error)
     throw error
   }
@@ -302,7 +302,7 @@ export async function deleteFile(relativePath: string): Promise<void> {
     }
     
     await fsUnlink(absolutePath)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting file:', error)
     throw error
   }
@@ -343,7 +343,7 @@ export async function deleteFolder(relativePath: string): Promise<void> {
     
     // Finally, delete the now-empty directory
     await fsRmdir(absolutePath)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting folder:', error)
     throw error
   }
@@ -354,7 +354,7 @@ export async function createFolder(relativePath: string): Promise<void> {
   try {
     const absolutePath = resolveFilePath(relativePath)
     await fsMkdir(absolutePath, { recursive: true })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating folder:', error)
     throw error
   }
@@ -382,7 +382,7 @@ export async function getItemById(id: string): Promise<{ id: string; name: strin
         path: parentPath === '.' ? '/' : parentPath
       }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error getting item by ID:', error)
     throw error
   }
