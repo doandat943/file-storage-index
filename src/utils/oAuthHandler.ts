@@ -5,7 +5,7 @@ import apiConfig from '../../config/api.config'
 
 // Just a disguise to obfuscate required tokens (including but not limited to client secret,
 // access tokens, and refresh tokens), used along with the following two functions
-const AES_SECRET_KEY = 'onedrive-vercel-index'
+const AES_SECRET_KEY = 'file-storage-index'
 export function obfuscateToken(token: string): string {
   // Encrypt token with AES
   const encrypted = CryptoJS.AES.encrypt(token, AES_SECRET_KEY)
@@ -17,7 +17,7 @@ export function revealObfuscatedToken(obfuscated: string): string {
   return decrypted.toString(CryptoJS.enc.Utf8)
 }
 
-// Generate the Microsoft OAuth 2.0 authorization URL, used for requesting the authorisation code
+// Generate the OAuth 2.0 authorization URL, used for requesting the authorisation code
 export function generateAuthorisationUrl(): string {
   const { clientId, redirectUri, authApi, scope } = apiConfig
   const authUrl = authApi.replace('/token', '/authorize')
@@ -33,7 +33,7 @@ export function generateAuthorisationUrl(): string {
   return `${authUrl}?${params.toString()}`
 }
 
-// The code returned from the Microsoft OAuth 2.0 authorization URL is a request URL with hostname
+// The code returned from the OAuth 2.0 authorization URL is a request URL with hostname
 // http://localhost and URL parameter code. This function extracts the code from the request URL
 export function extractAuthCodeFromRedirected(url: string): string {
   // Return empty string if the url is not the defined redirect uri
@@ -46,7 +46,7 @@ export function extractAuthCodeFromRedirected(url: string): string {
   return params.get('code') ?? ''
 }
 
-// After a successful authorisation, the code returned from the Microsoft OAuth 2.0 authorization URL
+// After a successful authorisation, the code returned from the OAuth 2.0 authorization URL
 // will be used to request an access token. This function requests the access token with the authorisation code
 // and returns the access token and refresh token on success.
 export async function requestTokenWithAuthCode(code: string): Promise<{ error: string; errorDescription: string; errorUri: string }> {
@@ -57,8 +57,7 @@ export async function requestTokenWithAuthCode(code: string): Promise<{ error: s
   }
 }
 
-// Verify the identity of the user with the access token and compare it with the userPrincipalName
-// in the Microsoft Graph API. If the userPrincipalName matches, proceed with token storing.
+// Verify the identity of the user with the access token
 export async function getAuthPersonInfo(accessToken: string) {
   const profileApi = apiConfig.driveApi.replace('/drive', '')
   return axios.get(profileApi, {

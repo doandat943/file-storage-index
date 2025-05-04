@@ -19,7 +19,7 @@ import siteConfig from '../../config/site.config'
 
 /**
  * Extract the searched item's path in field 'parentReference' and convert it to the
- * absolute path represented in onedrive-vercel-index
+ * absolute path represented in file-storage-index
  *
  * @param path Path returned from the parentReference field of the driveItem
  * @returns The absolute path of the driveItem in the search result
@@ -30,7 +30,7 @@ function mapAbsolutePath(path: string): string {
   const absolutePath = path.split(siteConfig.baseDirectory === '/' ? 'root:' : siteConfig.baseDirectory)
   // path returned by the API may contain #, by doing a decodeURIComponent and then encodeURIComponent we can
   // replace URL sensitive characters such as the # with %23
-  return absolutePath.length > 1 // solve https://github.com/spencerwooo/onedrive-vercel-index/issues/539
+  return absolutePath.length > 1 // solve issues with path formatting
     ? absolutePath[1]
         .split('/')
         .map(p => encodeURIComponent(decodeURIComponent(p)))
@@ -52,10 +52,10 @@ function useDriveItemSearch() {
     // Map parentReference to the absolute path of the search result
     data.map(item => {
       item['path'] =
-        'path' in item.parentReference
-          ? // OneDrive International have the path returned in the parentReference field
+        (item.parentReference && item.parentReference.path)
+          ? // Standard storage path
             `${mapAbsolutePath(item.parentReference.path)}/${encodeURIComponent(item.name)}`
-          : // OneDrive for Business/Education does not, so we need extra steps here
+          : // Alternative storage format
             ''
     })
 

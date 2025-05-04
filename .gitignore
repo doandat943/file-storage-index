@@ -4,6 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
+.yarn/install-state.gz
 
 # testing
 /coverage
@@ -11,6 +12,7 @@
 # next.js
 /.next/
 /out/
+next-env.d.ts
 
 # production
 /build
@@ -27,7 +29,8 @@ yarn-error.log*
 pnpm-debug.log*
 
 # local env files
-.env.local
+.env
+.env*.local
 .env.development.local
 .env.test.local
 .env.production.local
@@ -40,11 +43,16 @@ pnpm-debug.log*
 
 # IDE
 .idea
-.vscode
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
 
 # lock files
-yarn.lock
-package-lock.json
+# yarn.lock
+# package-lock.json
+# pnpm-lock.yaml
 
 # redis dump
 dump.rdb
@@ -77,10 +85,35 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-.vscode/*
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
 
-# Local History for Visual Studio Code
-.history/
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
 
-# Built Visual Studio Code Extensions
-*.vsix
+# Logs
+logs
+*.log
+
+# Cache directories
+.npm
+.eslintcache
+.stylelintcache
+.prettiercache
+.cache

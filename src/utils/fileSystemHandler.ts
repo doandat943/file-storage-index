@@ -157,7 +157,7 @@ export async function calculateDirectorySize(directoryPath: string): Promise<num
   }
 }
 
-// List files and folders in a directory (similar to OneDrive folder listing)
+// List files and folders in a directory
 export async function getFolderContents(folderPath: string): Promise<OdFolderObject> {
   try {
     const absolutePath = resolveFilePath(folderPath)

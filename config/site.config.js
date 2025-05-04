@@ -4,13 +4,12 @@
  */
 module.exports = {
   // This is what we use to identify who you are when you are initialising the website for the first time.
-  // Make sure this is exactly the same as the email address you use to sign into your Microsoft account.
   // You can also put this in your Vercel's environment variable 'NEXT_PUBLIC_USER_PRINCIPLE_NAME' if you worry about
   // your email being exposed in public.
   userPrincipalName: process.env.NEXT_PUBLIC_USER_PRINCIPLE_NAME || 'admin@example.com',
 
   // [OPTIONAL] This is the website icon to the left of the title inside the navigation bar. It should be placed under the
-  // /public directory of your GitHub project (not your OneDrive folder!), and referenced here by its relative path to /public.
+  // /public directory of your GitHub project, and referenced here by its relative path to /public.
   icon: '/icons/128.png',
 
   // Prefix for KV Storage
@@ -19,18 +18,17 @@ module.exports = {
   // The name of your website. Present alongside your icon.
   title: "File Storage Index",
 
-  // The folder that you are to share publicly with onedrive-vercel-index. Use '/' if you want to share your root folder.
+  // The folder that you are to share publicly. Use '/' if you want to share your root folder.
   baseDirectory: '/',
 
   // [OPTIONAL] This represents the maximum number of items that one directory lists, pagination supported.
-  // Do note that this is limited up to 200 items by the upstream OneDrive API.
   maxItems: 100,
 
   // [OPTIONAL] We use Google Fonts natively for font customisations.
   // You can check and generate the required links and names at https://fonts.google.com.
-  // googleFontSans - the sans serif font used in onedrive-vercel-index.
+  // googleFontSans - the sans serif font used in file-storage-index.
   googleFontSans: 'Inter',
-  // googleFontMono - the monospace font used in onedrive-vercel-index.
+  // googleFontMono - the monospace font used in file-storage-index.
   googleFontMono: 'Fira Mono',
   // googleFontLinks -  an array of links for referencing the google font assets.
   googleFontLinks: ['https://fonts.googleapis.com/css2?family=Fira+Mono&family=Inter:wght@400;500;700&display=swap'],
@@ -42,7 +40,7 @@ module.exports = {
     'Powered by <a href="https://github.com/doandat943/file-storage-index" target="_blank" rel="noopener noreferrer">File Storage Index</a>. Made with ❤ by doandat943.',
 
   // [OPTIONAL] This is where you specify the folders that are password protected. It is an array of paths pointing to all
-  // the directories in your OneDrive that you have protected. You must point to a directory, not a file.
+  // the directories that you have protected. You must point to a directory, not a file.
   // Each path must start with '/' and must not contain any trailing slashes.
   protectedRoutes: ['/protected'],
 
@@ -76,7 +74,6 @@ module.exports = {
   // But if you want to use FontAwesome, you can replace 'remix' with 'fontawesome'.
   // If you have selected 'fontawesome', then remember to install the dependency with npm/yarn.
   // And import the CSS in the _app.tsx file.
-  // Reference: https://github.com/spencerwooo/onedrive-vercel-index/discussions/178
   iconLibrary: 'remix',
 
   // [OPTIONAL] This is a switch to determine whether we should show the last modified date of a file in the file list
