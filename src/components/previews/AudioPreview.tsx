@@ -1,7 +1,6 @@
 import type { OdFileObject } from '../../types'
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useRef, useState, useEffect } from 'react'
 
-import ReactAudioPlayer from 'react-audio-player'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useTranslation } from 'next-i18next'
 import { useRouter } from 'next/router'
@@ -11,42 +10,51 @@ import { DownloadBtnContainer, PreviewContainer } from './Containers'
 import { LoadingIcon } from '../Loading'
 import { formatModifiedDateTime } from '../../utils/fileDetails'
 import { getStoredToken } from '../../utils/protectedRouteHandler'
+import { getBaseUrl } from '../../utils/getBaseUrl'
 
 enum PlayerState {
-  Loading,
-  Ready,
-  Playing,
-  Paused,
+  Loading = 0,
+  Ready = 1,
+  Playing = 2,
+  Paused = 3,
 }
 
 const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
   const { t } = useTranslation()
   const { asPath } = useRouter()
   const hashedToken = getStoredToken(asPath)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
 
-  const rapRef = useRef<ReactAudioPlayer>(null)
   const [playerStatus, setPlayerStatus] = useState(PlayerState.Loading)
-  const [playerVolume, setPlayerVolume] = useState(1)
+  const [isIframeLoaded, setIsIframeLoaded] = useState(false)
 
   // Render audio thumbnail, and also check for broken thumbnails
   const thumbnail = `/api/thumbnail/?path=${asPath}&size=medium${hashedToken ? `&odpt=${hashedToken}` : ''}`
   const [brokenThumbnail, setBrokenThumbnail] = useState(false)
 
+  // Construct the audio URL
+  const audioUrl = `${getBaseUrl()}/api/raw/?path=${asPath}${hashedToken ? `&odpt=${hashedToken}` : ''}`
+  
+  // Set iframe URL for embedded player which uses less memory
+  const iframeUrl = `/api/embed?url=${encodeURIComponent(audioUrl)}&type=audio&title=${encodeURIComponent(file.name)}`
+
+  // Handle iframe load event
+  const handleIframeLoad = () => {
+    setIsIframeLoaded(true)
+    setPlayerStatus(PlayerState.Ready)
+  }
+
+  // Handle messages from iframe to update player state
   useEffect(() => {
-    // Manually get the HTML audio element and set onplaying event.
-    // - As the default event callbacks provided by the React component does not guarantee playing state to be set
-    // - properly when the user seeks through the timeline or the audio is buffered.
-    const rap = rapRef.current?.audioEl.current
-    if (rap) {
-      rap.oncanplay = () => setPlayerStatus(PlayerState.Ready)
-      rap.onended = () => setPlayerStatus(PlayerState.Paused)
-      rap.onpause = () => setPlayerStatus(PlayerState.Paused)
-      rap.onplay = () => setPlayerStatus(PlayerState.Playing)
-      rap.onplaying = () => setPlayerStatus(PlayerState.Playing)
-      rap.onseeking = () => setPlayerStatus(PlayerState.Loading)
-      rap.onwaiting = () => setPlayerStatus(PlayerState.Loading)
-      rap.onerror = () => setPlayerStatus(PlayerState.Paused)
-      rap.onvolumechange = () => setPlayerVolume(rap.volume)
+    const handleIframeMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'playerStatus') {
+        setPlayerStatus(event.data.status)
+      }
+    }
+    
+    window.addEventListener('message', handleIframeMessage)
+    return () => {
+      window.removeEventListener('message', handleIframeMessage)
     }
   }, [])
 
@@ -57,7 +65,7 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
           <div className="relative flex aspect-square w-full items-center justify-center rounded bg-gray-100 transition-all duration-75 dark:bg-gray-700 md:w-48">
             <div
               className={`absolute z-20 flex h-full w-full items-center justify-center transition-all duration-300 ${
-                playerStatus === PlayerState.Loading
+                playerStatus === PlayerState.Loading && !isIframeLoaded
                   ? 'bg-white opacity-80 dark:bg-gray-800'
                   : 'bg-transparent opacity-0'
               }`}
@@ -94,14 +102,16 @@ const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
               </div>
             </div>
 
-            <ReactAudioPlayer
-              className="h-11 w-full"
-              src={`/api/raw/?path=${asPath}${hashedToken ? `&odpt=${hashedToken}` : ''}`}
-              ref={rapRef}
-              controls
-              preload="auto"
-              volume={playerVolume}
-            />
+            <div className="h-16 w-full">
+              <iframe
+                ref={iframeRef}
+                src={iframeUrl}
+                className="w-full h-full border-0"
+                title={file.name}
+                onLoad={handleIframeLoad}
+                loading="lazy"
+              />
+            </div>
           </div>
         </div>
       </PreviewContainer>

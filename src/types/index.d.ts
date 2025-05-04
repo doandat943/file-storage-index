@@ -37,6 +37,10 @@ export type OdFolderObject = {
       duration?: number
       bitrate?: number
       frameRate?: number
+      audioBitsPerSample?: number
+      audioChannels?: number
+      audioFormat?: string
+      audioSamplesPerSecond?: number
     }
     thumbnailPath?: string
   }>
@@ -69,6 +73,10 @@ export type OdFileObject = {
     duration?: number
     bitrate?: number
     frameRate?: number
+    audioBitsPerSample?: number
+    audioChannels?: number
+    audioFormat?: string
+    audioSamplesPerSecond?: number
   }
   thumbnailPath?: string
   path?: string
@@ -88,7 +96,7 @@ export type OdImageFile = {
   height?: number
 }
 
-// Video file representation. All fields are declared here, but we mainly use 'width' and 'height'.
+// Video file representation. All fields are declared here, mainly used for video playback.
 export type OdVideoFile = {
   width: number
   height: number

@@ -3,6 +3,7 @@ import path from 'path'
 import { promisify } from 'util'
 import apiConfig from '../../config/api.config'
 import { OdFileObject, OdFolderObject } from '../types'
+import { Readable } from 'stream'
 
 const fsReaddir = promisify(fs.readdir)
 const fsStat = promisify(fs.stat)
@@ -15,6 +16,9 @@ const fsRmdir = promisify(fs.rmdir)
 
 // Get the absolute path to the file storage directory
 const fileStorageDir = path.resolve(process.cwd(), apiConfig.storageConfig.fileDirectory)
+
+// Default chunk size for streaming (1MB)
+const DEFAULT_CHUNK_SIZE = 1024 * 1024
 
 // Ensure file storage directory exists
 export async function ensureStorageDir(): Promise<void> {
@@ -241,7 +245,7 @@ export async function getFileInfo(filePath: string): Promise<OdFileObject> {
   }
 }
 
-// Read file content
+// Read file content - consider replacing uses of this with streamFileContent
 export async function readFileContent(filePath: string): Promise<Buffer> {
   try {
     const absolutePath = resolveFilePath(filePath)
@@ -263,6 +267,88 @@ export async function readFileContent(filePath: string): Promise<Buffer> {
     if (error.message !== 'File not found' && error.message !== 'Not a file') {
       console.error('Error reading file:', error)
     }
+    throw error
+  }
+}
+
+// Stream file content - memory efficient way to serve files
+export function streamFileContent(filePath: string, range?: { start: number, end: number }): { 
+  stream: Readable, 
+  size: number, 
+  mimeType: string,
+  isRangeRequest: boolean
+} {
+  try {
+    // Resolve the absolute path
+    const absolutePath = resolveFilePath(filePath)
+    
+    // Check if file exists synchronously (better performance for streaming)
+    if (!fs.existsSync(absolutePath)) {
+      throw new Error('File not found')
+    }
+    
+    // Get file stats
+    const stats = fs.statSync(absolutePath)
+    
+    if (stats.isDirectory()) {
+      throw new Error('Not a file')
+    }
+    
+    // Determine the MIME type
+    const fileName = path.basename(filePath)
+    const ext = path.extname(fileName).toLowerCase()
+    let mimeType = 'application/octet-stream'
+    
+    // Use same MIME types as in fileToOdFile
+    const mimeTypes: Record<string, string> = {
+      '.txt': 'text/plain',
+      '.html': 'text/html',
+      '.css': 'text/css',
+      '.js': 'application/javascript',
+      '.json': 'application/json',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.svg': 'image/svg+xml',
+      '.pdf': 'application/pdf',
+      '.mp3': 'audio/mpeg',
+      '.mp4': 'video/mp4',
+    }
+    
+    if (ext in mimeTypes) {
+      mimeType = mimeTypes[ext]
+    }
+    
+    // Handle range request if provided
+    if (range) {
+      // Validate range
+      const { start, end } = range
+      // Make sure end is not beyond the file size
+      const validEnd = end < stats.size ? end : stats.size - 1
+      
+      // Create a read stream with the specified range
+      const stream = fs.createReadStream(absolutePath, { start, end: validEnd })
+      
+      return {
+        stream,
+        size: validEnd - start + 1,
+        mimeType,
+        isRangeRequest: true
+      }
+    } else {
+      // Create a read stream for the entire file
+      const stream = fs.createReadStream(absolutePath)
+      
+      return {
+        stream,
+        size: stats.size,
+        mimeType,
+        isRangeRequest: false
+      }
+    }
+  } catch (error: any) {
+    // Wrap the error to be handled by the caller
     throw error
   }
 }

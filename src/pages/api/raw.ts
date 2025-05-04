@@ -5,7 +5,7 @@ import Cors from 'cors'
 
 import apiConfig from '../../../config/api.config'
 import { encodePath, checkAuthRoute } from '.'
-import { readFileContent, getFileInfo } from '../../utils/fileSystemHandler'
+import { getFileInfo, streamFileContent } from '../../utils/fileSystemHandler'
 
 // CORS middleware for raw links: https://nextjs.org/docs/api-routes/api-middlewares
 export function runCorsMiddleware(req: NextApiRequest, res: NextApiResponse) {
@@ -59,27 +59,65 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Get file info first to check if it exists and is a file
       const fileInfo = await getFileInfo(requestPath)
       
-      // Read the file content
-      const fileContent = await readFileContent(requestPath)
+      // Parse range header for video/audio streaming
+      const rangeHeader = req.headers.range
+      let range: { start: number, end: number } | undefined = undefined
       
-      // Determine if we should proxy or directly serve the file
-      if (proxy && fileInfo.size < 4194304) {
+      if (rangeHeader) {
+        const matches = /bytes=(\d+)-(\d*)/.exec(rangeHeader)
+        
+        if (matches) {
+          const start = parseInt(matches[1], 10)
+          // If end is not specified, use the file size - 1
+          const end = matches[2] ? parseInt(matches[2], 10) : fileInfo.size - 1
+          
+          // Validate range
+          if (start >= 0 && end < fileInfo.size && start <= end) {
+            range = { start, end }
+          }
+        }
+      }
+      
+      // Stream the file content
+      try {
+        const { stream, size, mimeType, isRangeRequest } = streamFileContent(requestPath, range)
+        
         // Set appropriate headers
-        res.setHeader('Content-Type', fileInfo.file.mimeType)
-        res.setHeader('Content-Length', fileInfo.size)
+        res.setHeader('Content-Type', mimeType)
+        res.setHeader('Accept-Ranges', 'bytes')
+        
+        // For range requests, set range-specific headers
+        if (isRangeRequest && range) {
+          res.statusCode = 206 // Partial Content
+          res.setHeader('Content-Range', `bytes ${range.start}-${range.end}/${fileInfo.size}`)
+          res.setHeader('Content-Length', size)
+        } else {
+          res.statusCode = 200 // OK
+          res.setHeader('Content-Length', fileInfo.size)
+        }
+        
+        // Set cache control and content disposition headers
         res.setHeader('Cache-Control', apiConfig.cacheControlHeader)
         res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(fileInfo.name)}"`)
         
-        // Send file content as response
-        res.status(200).send(fileContent)
-      } else {
-        // For larger files, we'll set headers and stream the response
-        res.setHeader('Content-Type', fileInfo.file.mimeType)
-        res.setHeader('Content-Length', fileInfo.size)
-        res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(fileInfo.name)}"`)
+        // Pipe the stream to the response
+        stream.pipe(res)
         
-        // Send file content
-        res.status(200).send(fileContent)
+        // Handle stream errors
+        stream.on('error', (err) => {
+          console.error('Stream error:', err)
+          // Only end the response if it hasn't been sent yet
+          if (!res.writableEnded) {
+            res.status(500).json({ error: 'Error streaming file.' })
+          }
+        })
+        
+        // Return from the function without ending the response,
+        // as the stream will end it automatically
+        return
+      } catch (streamError: any) {
+        console.error('Streaming error:', streamError)
+        res.status(500).json({ error: 'Error streaming file content.' })
       }
     } catch (error: any) {
       if (error.message === 'File not found') {
