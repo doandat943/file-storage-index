@@ -111,6 +111,52 @@ type FolderItem = OdFileObject | {
   };
 }
 
+// Function to calculate directory size
+export async function calculateDirectorySize(directoryPath: string): Promise<number> {
+  try {
+    const absolutePath = resolveFilePath(directoryPath);
+    const exists = await fsExists(absolutePath);
+    
+    if (!exists) {
+      return 0;
+    }
+    
+    const stats = await fsStat(absolutePath);
+    
+    if (!stats.isDirectory()) {
+      return stats.size;
+    }
+    
+    // Get all contents
+    const files = await fsReaddir(absolutePath);
+    
+    if (files.length === 0) {
+      return 0;
+    }
+    
+    // Use a faster approach for large directories - only calculate size of first level files
+    // This is a balanced approach that avoids performance issues with deep directories
+    let size = 0;
+    for (const file of files) {
+      const filePath = path.join(absolutePath, file);
+      const stats = await fsStat(filePath);
+      
+      if (stats.isDirectory()) {
+        // For directories, we add a nominal size to indicate it's not empty
+        // but don't recursively calculate for performance reasons
+        size += 4096; // Standard directory size in many file systems
+      } else {
+        size += stats.size;
+      }
+    }
+    
+    return size;
+  } catch (error) {
+    console.error('Error calculating directory size:', error);
+    return 0;
+  }
+}
+
 // List files and folders in a directory (similar to OneDrive folder listing)
 export async function getFolderContents(folderPath: string): Promise<OdFolderObject> {
   try {
@@ -134,10 +180,13 @@ export async function getFolderContents(folderPath: string): Promise<OdFolderObj
       
       if (stats.isDirectory()) {
         // It's a folder
+        const relativeFolderPath = path.join(folderPath, file);
+        const folderSize = await calculateDirectorySize(relativeFolderPath);
+        
         return {
           id: Buffer.from(path.join(folderPath, file)).toString('base64'),
           name: file,
-          size: 0,
+          size: folderSize,
           lastModifiedDateTime: stats.mtime.toISOString(),
           folder: {
             childCount: (await fsReaddir(filePath)).length,
