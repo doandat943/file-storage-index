@@ -8,7 +8,7 @@ import { useTranslation } from 'next-i18next'
 
 import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Dialog, Transition } from '@headlessui/react'
+import { Dialog, Transition, DialogPanel, DialogTitle } from '@headlessui/react'
 
 import type { OdDriveItem, OdSearchResult } from '../types'
 import { LoadingIcon } from './Loading'
@@ -189,20 +189,20 @@ export default function SearchModal({
   return (
     <Transition appear show={searchOpen} as={Fragment}>
       <Dialog as="div" className="fixed inset-0 z-[200] overflow-y-auto" onClose={closeSearchBox}>
-        <div className="fixed inset-0" onClick={closeSearchBox}>
-          <div className="min-h-screen px-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-100"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="ease-in duration-100"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <div className="fixed inset-0 bg-white/80 dark:bg-gray-800/80" />
-            </Transition.Child>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-100"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-white/80 dark:bg-gray-800/80" />
+        </Transition.Child>
 
+        <div className="fixed inset-0">
+          <div className="min-h-screen px-4 text-center">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-100"
@@ -212,11 +212,11 @@ export default function SearchModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <div 
+              <DialogPanel 
                 className="my-12 inline-block w-full max-w-3xl transform overflow-hidden rounded border border-gray-400/30 text-left shadow-xl transition-all"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Dialog.Title
+                <DialogTitle
                   as="h3"
                   className="flex items-center space-x-4 border-b border-gray-400/30 bg-gray-50 p-4 dark:bg-gray-800 dark:text-white"
                 >
@@ -228,6 +228,7 @@ export default function SearchModal({
                     placeholder={t('Search ...')}
                     value={query}
                     onChange={e => setQuery(e.target.value)}
+                    autoFocus
                   />
                   <div 
                     className="rounded-lg bg-gray-200 px-2 py-1 text-xs font-medium dark:bg-gray-700 cursor-pointer"
@@ -235,7 +236,7 @@ export default function SearchModal({
                   >
                     ESC
                   </div>
-                </Dialog.Title>
+                </DialogTitle>
                 <div
                   className="max-h-[80vh] overflow-x-hidden overflow-y-scroll bg-white dark:bg-gray-900 dark:text-white"
                 >
@@ -260,7 +261,7 @@ export default function SearchModal({
                     </>
                   )}
                 </div>
-              </div>
+              </DialogPanel>
             </Transition.Child>
           </div>
         </div>
