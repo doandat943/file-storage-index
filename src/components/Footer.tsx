@@ -4,7 +4,7 @@ import { useTranslation } from 'next-i18next'
 import siteConfig from '../../config/site.config'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-export const Footer: React.FC<{ className?: string }> = ({ className }) => {
+const Footer: React.FC<{ className?: string }> = ({ className }) => {
   const router = useRouter()
   const { t } = useTranslation()
 
@@ -21,3 +21,5 @@ export const Footer: React.FC<{ className?: string }> = ({ className }) => {
     </div>
   )
 }
+
+export default Footer
