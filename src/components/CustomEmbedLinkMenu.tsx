@@ -1,6 +1,6 @@
 import { Dispatch, Fragment, SetStateAction, useRef, useState } from 'react'
 import { useTranslation } from 'next-i18next'
-import { Dialog, Transition } from '@headlessui/react'
+import { Dialog, Transition, DialogBackdrop } from '@headlessui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useClipboard } from 'use-clipboard-copy'
 
@@ -60,7 +60,7 @@ export default function CustomEmbedLinkMenu({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Dialog.Overlay className="fixed inset-0 bg-white/60 dark:bg-gray-800/60" />
+            <DialogBackdrop className="fixed inset-0 bg-white/60 dark:bg-gray-800/60" />
           </Transition.Child>
 
           {/* This element is to trick the browser into centering the modal contents. */}
