@@ -39,7 +39,7 @@ module.exports = {
   // quotes - changing " to \". If you write multiline strings here, make sure you add \ at the end
   // of each line to escape the line break.
   footer:
-    'Powered by <a href="https://github.com/doandat943/file-storage-index" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 dark:hover:text-blue-400">File Storage Index</a> © 2025',
+    'Powered by <a href="https://github.com/doandat943/file-storage-index" target="_blank" rel="noopener noreferrer">File Storage Index</a>. Made with ❤ by doandat943.',
 
   // [OPTIONAL] This is where you specify the folders that are password protected. It is an array of paths pointing to all
   // the directories in your OneDrive that you have protected. You must point to a directory, not a file.
