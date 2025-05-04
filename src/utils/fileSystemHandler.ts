@@ -5,6 +5,7 @@ import apiConfig from '../../config/api.config'
 import { OdFileObject, OdFolderObject } from '../types'
 import { Readable } from 'stream'
 
+// Promisify FS functions
 const fsReaddir = promisify(fs.readdir)
 const fsStat = promisify(fs.stat)
 const fsReadFile = promisify(fs.readFile)
@@ -19,6 +20,31 @@ const fileStorageDir = path.resolve(process.cwd(), apiConfig.storageConfig.fileD
 
 // Default chunk size for streaming (1MB)
 const DEFAULT_CHUNK_SIZE = 1024 * 1024
+
+// Basic MIME type mapping used throughout the module
+const MIME_TYPES: Record<string, string> = {
+  '.txt': 'text/plain',
+  '.html': 'text/html',
+  '.css': 'text/css',
+  '.js': 'application/javascript',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.pdf': 'application/pdf',
+  '.mp3': 'audio/mpeg',
+  '.mp4': 'video/mp4',
+}
+
+/**
+ * Determine MIME type based on file extension
+ */
+function getMimeType(fileName: string): string {
+  const ext = path.extname(fileName).toLowerCase()
+  return MIME_TYPES[ext] || 'application/octet-stream'
+}
 
 // Ensure file storage directory exists
 export async function ensureStorageDir(): Promise<void> {
@@ -36,30 +62,7 @@ export function resolveFilePath(relativePath: string): string {
 
 // Convert a file's stats to the OdFileObject format
 function fileToOdFile(filePath: string, stats: fs.Stats, fileName: string): OdFileObject {
-  // Determine MIME type based on extension (basic implementation)
-  const ext = path.extname(fileName).toLowerCase()
-  let mimeType = 'application/octet-stream'
-  
-  // Basic MIME type mapping
-  const mimeTypes: Record<string, string> = {
-    '.txt': 'text/plain',
-    '.html': 'text/html',
-    '.css': 'text/css',
-    '.js': 'application/javascript',
-    '.json': 'application/json',
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.gif': 'image/gif',
-    '.svg': 'image/svg+xml',
-    '.pdf': 'application/pdf',
-    '.mp3': 'audio/mpeg',
-    '.mp4': 'video/mp4',
-  }
-  
-  if (ext in mimeTypes) {
-    mimeType = mimeTypes[ext]
-  }
+  const mimeType = getMimeType(fileName)
   
   // Create OdFileObject
   const result: OdFileObject = {
@@ -138,17 +141,15 @@ export async function calculateDirectorySize(directoryPath: string): Promise<num
       return 0;
     }
     
-    // Use a faster approach for large directories - only calculate size of first level files
-    // This is a balanced approach that avoids performance issues with deep directories
+    // Only calculate size of first level files for performance
     let size = 0;
     for (const file of files) {
       const filePath = path.join(absolutePath, file);
       const stats = await fsStat(filePath);
       
       if (stats.isDirectory()) {
-        // For directories, we add a nominal size to indicate it's not empty
-        // but don't recursively calculate for performance reasons
-        size += 4096; // Standard directory size in many file systems
+        // For directories, use nominal size
+        size += 4096; // Standard directory size
       } else {
         size += stats.size;
       }
@@ -211,7 +212,7 @@ export async function getFolderContents(folderPath: string): Promise<OdFolderObj
       value: items
     }
   } catch (error: any) {
-    // Only log real errors, not normal control flow exceptions
+    // Only log real errors, not control flow exceptions
     if (error.message !== 'Folder not found' && error.message !== 'Not a directory') {
       console.error('Error getting folder contents:', error)
     }
@@ -237,7 +238,7 @@ export async function getFileInfo(filePath: string): Promise<OdFileObject> {
     
     return fileToOdFile(filePath, stats, path.basename(filePath))
   } catch (error: any) {
-    // Only log real errors, not normal control flow exceptions
+    // Only log real errors, not control flow exceptions
     if (error.message !== 'File not found' && error.message !== 'Not a file') {
       console.error('Error getting file info:', error)
     }
@@ -263,7 +264,7 @@ export async function readFileContent(filePath: string): Promise<Buffer> {
     
     return await fsReadFile(absolutePath)
   } catch (error: any) {
-    // Only log real errors, not normal control flow exceptions
+    // Only log real errors, not control flow exceptions
     if (error.message !== 'File not found' && error.message !== 'Not a file') {
       console.error('Error reading file:', error)
     }
@@ -282,7 +283,7 @@ export function streamFileContent(filePath: string, range?: { start: number, end
     // Resolve the absolute path
     const absolutePath = resolveFilePath(filePath)
     
-    // Check if file exists synchronously (better performance for streaming)
+    // Check if file exists synchronously (better for streaming)
     if (!fs.existsSync(absolutePath)) {
       throw new Error('File not found')
     }
@@ -294,40 +295,18 @@ export function streamFileContent(filePath: string, range?: { start: number, end
       throw new Error('Not a file')
     }
     
-    // Determine the MIME type
+    // Get MIME type
     const fileName = path.basename(filePath)
-    const ext = path.extname(fileName).toLowerCase()
-    let mimeType = 'application/octet-stream'
-    
-    // Use same MIME types as in fileToOdFile
-    const mimeTypes: Record<string, string> = {
-      '.txt': 'text/plain',
-      '.html': 'text/html',
-      '.css': 'text/css',
-      '.js': 'application/javascript',
-      '.json': 'application/json',
-      '.png': 'image/png',
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.gif': 'image/gif',
-      '.svg': 'image/svg+xml',
-      '.pdf': 'application/pdf',
-      '.mp3': 'audio/mpeg',
-      '.mp4': 'video/mp4',
-    }
-    
-    if (ext in mimeTypes) {
-      mimeType = mimeTypes[ext]
-    }
+    const mimeType = getMimeType(fileName)
     
     // Handle range request if provided
     if (range) {
       // Validate range
       const { start, end } = range
-      // Make sure end is not beyond the file size
+      // Ensure end is not beyond file size
       const validEnd = end < stats.size ? end : stats.size - 1
       
-      // Create a read stream with the specified range
+      // Create read stream with range
       const stream = fs.createReadStream(absolutePath, { start, end: validEnd })
       
       return {
@@ -337,7 +316,7 @@ export function streamFileContent(filePath: string, range?: { start: number, end
         isRangeRequest: true
       }
     } else {
-      // Create a read stream for the entire file
+      // Create read stream for entire file
       const stream = fs.createReadStream(absolutePath)
       
       return {
@@ -348,7 +327,6 @@ export function streamFileContent(filePath: string, range?: { start: number, end
       }
     }
   } catch (error: any) {
-    // Wrap the error to be handled by the caller
     throw error
   }
 }
@@ -357,7 +335,7 @@ export function streamFileContent(filePath: string, range?: { start: number, end
 export async function writeFile(relativePath: string, content: Buffer): Promise<void> {
   try {
     const absolutePath = resolveFilePath(relativePath)
-    // Ensure the directory exists
+    // Ensure directory exists
     const dirPath = path.dirname(absolutePath)
     
     if (!fs.existsSync(dirPath)) {
@@ -410,7 +388,7 @@ export async function deleteFolder(relativePath: string): Promise<void> {
       throw new Error('Not a directory')
     }
     
-    // First, get all contents
+    // Get all contents
     const contents = await fsReaddir(absolutePath)
     
     // Delete all contents
@@ -427,7 +405,7 @@ export async function deleteFolder(relativePath: string): Promise<void> {
       }
     }
     
-    // Finally, delete the now-empty directory
+    // Delete the now-empty directory
     await fsRmdir(absolutePath)
   } catch (error: any) {
     console.error('Error deleting folder:', error)

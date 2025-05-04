@@ -19,7 +19,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const decodedUrl = decodeURIComponent(url)
   const mediaTitle = title ? decodeURIComponent(title as string) : 'Media Player'
   
-  // Generate minimal HTML for embedding media
+  // Generate HTML for embedding media
   const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -103,7 +103,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   </div>
 
   <script>
-    // Simple player script with memory optimization
     document.addEventListener('DOMContentLoaded', function() {
       const player = document.getElementById('player');
       const playPauseBtn = document.getElementById('playPause');
@@ -121,10 +120,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       // Send player status to parent window
       function sendPlayerStatus(status) {
         if (window.parent && window.parent !== window) {
-          window.parent.postMessage({ 
-            type: 'playerStatus', 
-            status: status 
-          }, '*');
+          window.parent.postMessage({ type: 'playerStatus', status }, '*');
         }
       }
       
@@ -132,55 +128,43 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       player.setAttribute('preload', 'metadata');
       
       // Player event listeners
-      player.addEventListener('canplay', function() {
-        sendPlayerStatus(PlayerState.Ready);
-      });
-      
-      player.addEventListener('playing', function() {
+      player.addEventListener('canplay', () => sendPlayerStatus(PlayerState.Ready));
+      player.addEventListener('playing', () => {
         sendPlayerStatus(PlayerState.Playing);
         playPauseBtn.textContent = 'Pause';
       });
-      
-      player.addEventListener('pause', function() {
+      player.addEventListener('pause', () => {
         sendPlayerStatus(PlayerState.Paused);
         playPauseBtn.textContent = 'Play';
       });
-      
-      player.addEventListener('waiting', function() {
-        sendPlayerStatus(PlayerState.Loading);
-      });
-      
-      player.addEventListener('ended', function() {
+      player.addEventListener('waiting', () => sendPlayerStatus(PlayerState.Loading));
+      player.addEventListener('ended', () => {
         sendPlayerStatus(PlayerState.Paused);
         playPauseBtn.textContent = 'Play';
-        player.src = ''; // Clear source when ended
+        player.src = ''; // Clear source
       });
       
-      // Memory optimization - release resources when possible
-      document.addEventListener('visibilitychange', function() {
+      // Memory management
+      document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
           player.pause();
           sendPlayerStatus(PlayerState.Paused);
         }
       });
       
-      // Force garbage collection when possible
-      window.addEventListener('beforeunload', function() {
-        player.src = ''; // Clear source
-        player.load(); // Force reload to clear memory
+      window.addEventListener('beforeunload', () => {
+        player.src = '';
+        player.load();
       });
       
-      // Simple controls
-      playPauseBtn.addEventListener('click', function() {
-        if (player.paused) {
-          player.play();
-        } else {
-          player.pause();
-        }
+      // Controls
+      playPauseBtn.addEventListener('click', () => {
+        if (player.paused) player.play();
+        else player.pause();
       });
       
-      // Playback speed control
-      speedBtn.addEventListener('click', function() {
+      // Playback speed
+      speedBtn.addEventListener('click', () => {
         const speeds = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
         const currentSpeed = parseFloat(speedBtn.getAttribute('data-speed'));
         const currentIndex = speeds.indexOf(currentSpeed);
@@ -192,8 +176,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         speedBtn.textContent = nextSpeed + 'x';
       });
       
-      // Fullscreen control
-      fullscreenBtn.addEventListener('click', function() {
+      // Fullscreen
+      fullscreenBtn.addEventListener('click', () => {
         if (type === 'video') {
           if (document.fullscreenElement) {
             document.exitFullscreen().catch(err => console.error(err));
@@ -208,31 +192,28 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         fullscreenBtn.style.display = 'none';
       }
       
-      // Periodically check if player is still active
-      const memoryCheckInterval = setInterval(() => {
+      // Auto-recovery system
+      let lastProgressTime = Date.now();
+      player.addEventListener('progress', () => {
+        lastProgressTime = Date.now();
+      });
+      
+      // Check for stalled playback
+      const memoryInterval = setInterval(() => {
         if (!document.body.contains(player)) {
-          clearInterval(memoryCheckInterval);
+          clearInterval(memoryInterval);
           return;
         }
         
-        // Check for stalled playback
-        if (player.readyState < 3 && !player.paused && Date.now() - player.lastProgressTime > 10000) {
-          console.log('Playback stalled, attempting recovery');
+        if (player.readyState < 3 && !player.paused && Date.now() - lastProgressTime > 10000) {
+          console.log('Playback stalled, recovery attempt');
           player.load();
           player.play().catch(e => console.error('Recovery failed', e));
         }
       }, 5000);
       
-      // Track progress time to detect stalls
-      player.lastProgressTime = Date.now();
-      player.addEventListener('progress', () => {
-        player.lastProgressTime = Date.now();
-      });
-      
-      // Notify parent that iframe is loaded
-      window.addEventListener('load', function() {
-        sendPlayerStatus(PlayerState.Ready);
-      });
+      // Initial status
+      window.addEventListener('load', () => sendPlayerStatus(PlayerState.Ready));
     });
   </script>
 </body>

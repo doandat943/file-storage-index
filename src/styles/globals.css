@@ -8,6 +8,46 @@
   body {
     @apply bg-white text-black dark:bg-gray-900 dark:text-white;
   }
+  
+  /* Video và audio styling */
+  video, audio {
+    @apply w-full rounded-md shadow-md;
+  }
+  
+  video {
+    @apply max-h-[80vh] bg-black;
+  }
+  
+  audio {
+    @apply bg-gray-100 dark:bg-gray-800;
+  }
+  
+  /* Plyr custom styles */
+  .plyr {
+    --plyr-color-main: #3b82f6;
+    --plyr-video-control-color: #fff;
+    --plyr-audio-control-color: #374151;
+    --plyr-audio-control-color-hover: #1d4ed8;
+    --plyr-menu-background: rgba(255, 255, 255, 0.9);
+    --plyr-menu-color: #374151;
+    --plyr-menu-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    @apply rounded-md overflow-hidden shadow-md;
+  }
+  
+  .dark .plyr {
+    --plyr-audio-control-color: #e5e7eb;
+    --plyr-audio-control-color-hover: #60a5fa;
+    --plyr-menu-background: rgba(30, 41, 59, 0.9);
+    --plyr-menu-color: #e5e7eb;
+  }
+  
+  .plyr--video {
+    @apply aspect-video max-h-[80vh];
+  }
+  
+  .plyr--audio {
+    @apply rounded-md;
+  }
 }
 
 @layer utilities {
