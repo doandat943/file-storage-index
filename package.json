@@ -1,0 +1,112 @@
+{
+  "name": "file-storage-index",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A modern file storage explorer built with Next.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doandat943/file-storage-index.git"
+  },
+  "license": "MIT",
+  "author": "DoanDat <doandat943@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/doandat943/file-storage-index/issues"
+  },
+  "homepage": "https://github.com/doandat943/file-storage-index#readme",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "format": "prettier 'src/**/*.{js,ts,jsx,tsx}' --write",
+    "extract": "i18next"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "latest",
+    "@fortawesome/free-brands-svg-icons": "latest",
+    "@fortawesome/free-regular-svg-icons": "latest",
+    "@fortawesome/free-solid-svg-icons": "latest",
+    "@fortawesome/react-fontawesome": "latest",
+    "@headlessui/react": "latest",
+    "@tailwindcss/line-clamp": "latest",
+    "@vercel/analytics": "latest",
+    "awesome-debounce-promise": "latest",
+    "axios": "latest",
+    "cors": "latest",
+    "crypto-js": "latest",
+    "csstype": "latest",
+    "dayjs": "latest",
+    "emoji-regex": "latest",
+    "flv.js": "^1.6.2",
+    "formidable": "latest",
+    "hls.js": "^1.6.2",
+    "i18next": "latest",
+    "jszip": "latest",
+    "mpegts.js": "latest",
+    "next": "latest",
+    "next-i18next": "latest",
+    "nextjs-progressbar": "latest",
+    "plyr": "^3.7.8",
+    "plyr-react": "latest",
+    "react": "latest",
+    "react-async-hook": "latest",
+    "react-audio-player": "latest",
+    "react-cookie": "latest",
+    "react-copy-to-clipboard": "latest",
+    "react-dom": "latest",
+    "react-hot-toast": "latest",
+    "react-hotkeys-hook": "latest",
+    "react-i18next": "latest",
+    "react-markdown": "latest",
+    "react-reader": "latest",
+    "react-syntax-highlighter": "latest",
+    "react-use-system-theme": "latest",
+    "rehype-katex": "latest",
+    "rehype-raw": "latest",
+    "remark-gfm": "latest",
+    "remark-math": "latest",
+    "sharp": "latest",
+    "swr": "latest",
+    "use-clipboard-copy": "latest",
+    "use-constant": "latest"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.5",
+    "@types/cors": "latest",
+    "@types/crypto-js": "latest",
+    "@types/formidable": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-copy-to-clipboard": "latest",
+    "@types/react-dom": "latest",
+    "@types/react-syntax-highlighter": "latest",
+    "autoprefixer": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "eslint-config-prettier": "latest",
+    "i18next-parser": "latest",
+    "postcss": "latest",
+    "postcss-import": "^16.1.0",
+    "postcss-nesting": "^13.0.1",
+    "prettier": "latest",
+    "prettier-plugin-tailwindcss": "latest",
+    "tailwindcss": "3.3.5",
+    "typescript": "latest"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "arrowParens": "avoid",
+    "singleQuote": true,
+    "semi": false,
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "next",
+      "next/core-web-vitals",
+      "prettier"
+    ]
+  }
+}

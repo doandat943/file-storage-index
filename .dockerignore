@@ -1,0 +1,11 @@
+.git
+.github
+.next
+node_modules
+file_storage
+Dockerfile
+.dockerignore
+README.md
+README-LOCAL-STORAGE.md
+.env
+.env.local 
