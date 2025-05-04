@@ -1,10 +1,21 @@
 import { posix as pathPosix } from 'path'
 import type { NextApiRequest, NextApiResponse } from 'next'
+import Cors from 'cors'
 import apiConfig from '../../../config/api.config'
 import siteConfig from '../../../config/site.config'
 import { compareHashedToken } from '../../utils/protectedRouteHandler'
-import { runCorsMiddleware } from './raw'
 import { getFolderContents, getFileInfo, ensureStorageDir, readFileContent } from '../../utils/fileSystemHandler'
+
+// CORS middleware for raw links
+const cors = Cors({ methods: ['GET', 'HEAD'] })
+function runCorsMiddleware(req: NextApiRequest, res: NextApiResponse) {
+  return new Promise((resolve, reject) => {
+    cors(req, res, result => {
+      if (result instanceof Error) return reject(result)
+      return resolve(result)
+    })
+  })
+}
 
 const basePath = pathPosix.resolve('/', siteConfig.baseDirectory)
 

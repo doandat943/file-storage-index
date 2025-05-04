@@ -93,7 +93,7 @@ const VideoPlayerComponent: FC<VideoPlayerProps> = ({
         URL.revokeObjectURL(subtitleUrl);
       }
     };
-  }, [subtitle]);
+  }, [subtitle, subtitleUrl]);
   
   // Đặt timeout chống loading quá lâu
   useEffect(() => {
@@ -117,7 +117,7 @@ const VideoPlayerComponent: FC<VideoPlayerProps> = ({
       
       return () => clearTimeout(timer);
     }
-  }, [playerRef.current]);
+  }, []);
   
   // Tạo cấu hình Plyr
   const plyrOptions = {

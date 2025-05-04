@@ -84,10 +84,10 @@ importers:
         specifier: latest
         version: 0.0.16(next@15.3.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
       plyr:
-        specifier: ^3.7.8
+        specifier: latest
         version: 3.7.8
       plyr-react:
-        specifier: ^5.3.0
+        specifier: latest
         version: 5.3.0(plyr@3.7.8)(react@19.1.0)
       preview-office-docs:
         specifier: latest
@@ -186,9 +186,6 @@ importers:
       autoprefixer:
         specifier: latest
         version: 10.4.21(postcss@8.5.3)
-      cross-env:
-        specifier: latest
-        version: 7.0.3
       eslint:
         specifier: latest
         version: 9.26.0(jiti@2.4.2)
@@ -1447,11 +1444,6 @@ packages:
   cors@2.8.5:
     resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
     engines: {node: '>= 0.10'}
-
-  cross-env@7.0.3:
-    resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
-    engines: {node: '>=10.14', npm: '>=6', yarn: '>=1'}
-    hasBin: true
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -4901,10 +4893,6 @@ snapshots:
     dependencies:
       object-assign: 4.1.1
       vary: 1.1.2
-
-  cross-env@7.0.3:
-    dependencies:
-      cross-spawn: 7.0.6
 
   cross-spawn@7.0.6:
     dependencies:

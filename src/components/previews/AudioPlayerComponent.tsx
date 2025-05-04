@@ -1,6 +1,7 @@
 import { FC, useEffect, useState, useRef } from 'react'
 import { LoadingIcon } from '../Loading'
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
 
 // Import Plyr với dynamic import để tránh lỗi SSR
 const Plyr = dynamic(() => import('plyr-react').then((mod) => mod.default), {
@@ -56,7 +57,7 @@ const AudioPlayerComponent: FC<AudioPlayerProps> = ({
       
       return () => clearTimeout(timer);
     }
-  }, [playerRef.current]);
+  }, []);
   
   // Tạo cấu hình Plyr
   const plyrOptions = {
@@ -116,11 +117,12 @@ const AudioPlayerComponent: FC<AudioPlayerProps> = ({
       
       <div className="flex flex-col md:flex-row md:items-center gap-4 w-full">
         {thumbnail && (
-          <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 rounded-md overflow-hidden">
-            <img 
+          <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 rounded-md overflow-hidden relative">
+            <Image 
               src={thumbnail} 
               alt={audioName} 
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
             />
           </div>
         )}
