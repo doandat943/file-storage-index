@@ -25,6 +25,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env.local
 .env.development.local
 .env.test.local
@@ -43,7 +44,6 @@ dump.rdb
 
 # Icon must end with two \r
 Icon
-
 
 # Thumbnails
 ._*
@@ -64,10 +64,9 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# VSCode
 .vscode/*
-
-# Local History for Visual Studio Code
 .history/
-
-# Built Visual Studio Code Extensions
 *.vsix
+
+file_storage

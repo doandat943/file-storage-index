@@ -3,10 +3,10 @@ import type { OdFileObject } from '../../types'
 import { FC, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
+import dynamic from 'next/dynamic'
 
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import Plyr from 'plyr-react'
 import { useAsync } from 'react-async-hook'
 import { useClipboard } from 'use-clipboard-copy'
 
@@ -20,6 +20,10 @@ import FourOhFour from '../FourOhFour'
 import Loading from '../Loading'
 import CustomEmbedLinkMenu from '../CustomEmbedLinkMenu'
 
+// Dynamic import of Plyr with ssr: false to ensure it's only loaded on the client side
+const Plyr = dynamic(() => import('plyr-react'), { ssr: false })
+
+// Import Plyr CSS
 import 'plyr-react/plyr.css'
 
 const VideoPlayer: FC<{

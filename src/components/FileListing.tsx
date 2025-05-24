@@ -165,12 +165,7 @@ const FileListing: FC<{ query?: ParsedUrlQuery }> = ({ query }) => {
   const { data, error, size, setSize } = useProtectedSWRInfinite(path)
 
   if (error) {
-    // If error includes 403 which means the user has not completed initial setup, redirect to OAuth page
-    if (error.status === 403) {
-      router.push('/onedrive-vercel-index-oauth/step-1')
-      return <div />
-    }
-
+    // For local storage version, there is no OAuth page, so just show the error
     return (
       <PreviewContainer>
         {error.status === 401 ? <Auth redirect={path} /> : <FourOhFour errorMsg={JSON.stringify(error.message)} />}

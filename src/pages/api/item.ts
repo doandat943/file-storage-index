@@ -1,36 +1,24 @@
-import axios from 'axios'
 import type { NextApiRequest, NextApiResponse } from 'next'
-
-import { getAccessToken } from '.'
-import apiConfig from '../../../config/api.config'
+import { getItemById } from '../../utils/fileSystemHandler'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Get access token from storage
-  const accessToken = await getAccessToken()
-
-  // Get item details (specifically, its path) by its unique ID in OneDrive
+  // Get ID from query params
   const { id = '' } = req.query
-
-  // Set edge function caching for faster load times, check docs:
-  // https://vercel.com/docs/concepts/functions/edge-caching
-  res.setHeader('Cache-Control', apiConfig.cacheControlHeader)
-
-  if (typeof id === 'string') {
-    const itemApi = `${apiConfig.driveApi}/items/${id}`
-
-    try {
-      const { data } = await axios.get(itemApi, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        params: {
-          select: 'id,name,parentReference',
-        },
-      })
-      res.status(200).json(data)
-    } catch (error: any) {
-      res.status(error?.response?.status ?? 500).json({ error: error?.response?.data ?? 'Internal server error.' })
-    }
-  } else {
-    res.status(400).json({ error: 'Invalid driveItem ID.' })
+  if (typeof id !== 'string') {
+    res.status(400).json({ error: 'Invalid ID.' })
+    return
   }
-  return
+
+  try {
+    // Get item info by ID (file or folder)
+    const item = await getItemById(id)
+    res.status(200).json(item)
+  } catch (error: any) {
+    if (error.message === 'Item not found') {
+      res.status(404).json({ error: 'Item not found.' })
+    } else {
+      console.error('Error getting item by ID:', error)
+      res.status(500).json({ error: 'Internal server error.' })
+    }
+  }
 }

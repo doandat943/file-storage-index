@@ -1,93 +1,153 @@
-import { posix as pathPosix } from 'path'
-
 import type { NextApiRequest, NextApiResponse } from 'next'
-import axios, { AxiosResponseHeaders } from 'axios'
 import Cors from 'cors'
+import { posix as pathPosix } from 'path'
+import { streamFileContent } from '../../utils/fileSystemHandler'
+import { checkAuthRoute, encodePath } from './index'
+import siteConfig from '../../../config/site.config'
 
-import { driveApi, cacheControlHeader } from '../../../config/api.config'
-import { encodePath, getAccessToken, checkAuthRoute } from '.'
-
-// CORS middleware for raw links: https://nextjs.org/docs/api-routes/api-middlewares
+/**
+ * CORS middleware for raw links
+ * @param req Next.js request
+ * @param res Next.js response
+ * @returns Promise that resolves when CORS headers are set
+ */
 export function runCorsMiddleware(req: NextApiRequest, res: NextApiResponse) {
   const cors = Cors({ methods: ['GET', 'HEAD'] })
   return new Promise((resolve, reject) => {
     cors(req, res, result => {
-      if (result instanceof Error) {
-        return reject(result)
-      }
-
+      if (result instanceof Error) return reject(result)
       return resolve(result)
     })
   })
 }
 
+/**
+ * Parse range header to get start and end bytes
+ * @param rangeHeader Range header value
+ * @param fileSize Total file size
+ * @returns Object containing start and end bytes
+ */
+function parseRangeHeader(rangeHeader: string, fileSize: number): { start: number; end: number } | null {
+  // Parse the range header value
+  const match = rangeHeader.match(/bytes=(\d*)-(\d*)/)
+  if (!match) return null
+
+  const rangeStart = match[1] ? parseInt(match[1], 10) : 0
+  const rangeEnd = match[2] ? parseInt(match[2], 10) : fileSize - 1
+
+  // Ensure range values are valid
+  const start = Math.max(0, rangeStart)
+  const end = Math.min(fileSize - 1, rangeEnd)
+
+  if (start > end) return null
+
+  return { start, end }
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const accessToken = await getAccessToken()
-  if (!accessToken) {
-    res.status(403).json({ error: 'No access token.' })
-    return
-  }
+  // Set CORS headers
+  await runCorsMiddleware(req, res)
 
-  const { path = '/', odpt = '', proxy = false } = req.query
-
-  // Sometimes the path parameter is defaulted to '[...path]' which we need to handle
-  if (path === '[...path]') {
-    res.status(400).json({ error: 'No path specified.' })
-    return
-  }
-  // If the path is not a valid path, return 400
+  const { path = '' } = req.query
   if (typeof path !== 'string') {
-    res.status(400).json({ error: 'Path query invalid.' })
+    res.status(400).json({ error: 'Path query is required.' })
     return
   }
+
+  // Get the clean path
   const cleanPath = pathPosix.resolve('/', pathPosix.normalize(path))
-
-  // Handle protected routes authentication
-  const odTokenHeader = (req.headers['od-protected-token'] as string) ?? odpt
-
-  const { code, message } = await checkAuthRoute(cleanPath, accessToken, odTokenHeader)
-  // Status code other than 200 means user has not authenticated yet
+  
+  // Handle protected routes
+  const { code, message } = await checkAuthRoute(cleanPath, req.headers['od-protected-token'] as string)
   if (code !== 200) {
     res.status(code).json({ error: message })
     return
   }
-  // If message is empty, then the path is not protected.
-  // Conversely, protected routes are not allowed to serve from cache.
+
+  // For protected routes, disable caching
   if (message !== '') {
     res.setHeader('Cache-Control', 'no-cache')
+  } else {
+    // By default caching is disabled for streaming, but can be enabled for specific types
+    // Add smart caching based on file types
+    const fileExtension = cleanPath.split('.').pop()?.toLowerCase() || ''
+    const cacheableTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico', 'css', 'js']
+    
+    if (cacheableTypes.includes(fileExtension)) {
+      res.setHeader('Cache-Control', 'public, max-age=86400') // Cache for 24 hours
+    } else {
+      res.setHeader('Cache-Control', 'no-cache')
+    }
   }
 
-  await runCorsMiddleware(req, res)
   try {
-    // Handle response from OneDrive API
-    const requestUrl = `${driveApi}/root${encodePath(cleanPath)}`
-    const { data } = await axios.get(requestUrl, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-      params: {
-        // OneDrive international version fails when only selecting the downloadUrl (what a stupid bug)
-        select: 'id,size,@microsoft.graph.downloadUrl',
-      },
-    })
-
-    if ('@microsoft.graph.downloadUrl' in data) {
-      // Only proxy raw file content response for files up to 4MB
-      if (proxy && 'size' in data && data['size'] < 4194304) {
-        const { headers, data: stream } = await axios.get(data['@microsoft.graph.downloadUrl'] as string, {
-          responseType: 'stream',
-        })
-        headers['Cache-Control'] = cacheControlHeader
-        // Send data stream as response
-        res.writeHead(200, headers as AxiosResponseHeaders)
+    // Get the encoded path for file system
+    const requestPath = encodePath(cleanPath)
+    
+    // Check for range header to support partial content requests (streaming)
+    const rangeHeader = req.headers.range
+    
+    let range: { start: number; end: number } | undefined
+    
+    if (rangeHeader) {
+      try {
+        // Stream the file with range support
+        const { stream, size, mimeType, isRangeRequest } = streamFileContent(
+          requestPath,
+          rangeHeader ? parseRangeHeader(rangeHeader, Infinity) || undefined : undefined
+        )
+        
+        // Set appropriate headers for streaming
+        res.setHeader('Content-Type', mimeType)
+        res.setHeader('Accept-Ranges', 'bytes')
+        
+        if (isRangeRequest && rangeHeader) {
+          const { start, end } = parseRangeHeader(rangeHeader, size) || { start: 0, end: size - 1 }
+          res.setHeader('Content-Range', `bytes ${start}-${end}/${size}`)
+          res.setHeader('Content-Length', end - start + 1)
+          res.status(206) // Partial Content
+        } else {
+          res.setHeader('Content-Length', size)
+          res.status(200)
+        }
+        
+        // Stream the file to the response
         stream.pipe(res)
-      } else {
-        res.redirect(data['@microsoft.graph.downloadUrl'])
+        
+        // Handle unexpected errors
+        stream.on('error', error => {
+          console.error('Stream error:', error)
+          // The response might have already started, so we can't send an error status
+          res.end()
+        })
+        
+      } catch (error: any) {
+        if (error.message === 'File not found') {
+          res.status(404).json({ error: 'File not found.' })
+        } else if (error.message === 'Not a file') {
+          res.status(400).json({ error: 'Resource is not a file.' })
+        } else {
+          console.error('Streaming error:', error)
+          res.status(500).json({ error: 'Internal server error.' })
+        }
       }
     } else {
-      res.status(404).json({ error: 'No download url found.' })
+      // No range header, stream the entire file
+      const { stream, size, mimeType } = streamFileContent(requestPath)
+      
+      res.setHeader('Content-Type', mimeType)
+      res.setHeader('Content-Length', size)
+      res.setHeader('Accept-Ranges', 'bytes')
+      
+      stream.pipe(res)
+      
+      stream.on('error', error => {
+        console.error('Stream error:', error)
+        res.end()
+      })
     }
-    return
   } catch (error: any) {
-    res.status(error?.response?.status ?? 500).json({ error: error?.response?.data ?? 'Internal server error.' })
-    return
+    console.error('Raw API error:', error)
+    res.status(500).json({ error: 'Internal server error.' })
   }
 }
