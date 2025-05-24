@@ -1,25 +1,25 @@
-import type { OdThumbnail } from '../../types'
-
-import { posix as pathPosix } from 'path'
-
-import axios from 'axios'
 import type { NextApiRequest, NextApiResponse } from 'next'
-
-import { checkAuthRoute, encodePath, getAccessToken } from '.'
+import { posix as pathPosix } from 'path'
+import fs from 'fs'
+import { promisify } from 'util'
+// @ts-ignore
+import NodeID3 from 'node-id3'
+// @ts-ignore
+import sharp from 'sharp'
+import { checkAuthRoute, encodePath } from '.'
 import apiConfig from '../../../config/api.config'
+import { getExtension } from '../../utils/getFileIcon'
+import { readFileContent, resolveFilePath } from '../../utils/fileSystemHandler'
+
+// Promisify fs functions
+const fsExists = promisify(fs.exists)
+const fsStat = promisify(fs.stat)
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const accessToken = await getAccessToken()
-  if (!accessToken) {
-    res.status(403).json({ error: 'No access token.' })
-    return
-  }
-
   // Get item thumbnails by its path since we will later check if it is protected
   const { path = '', size = 'medium', odpt = '' } = req.query
 
-  // Set edge function caching for faster load times, if route is not protected, check docs:
-  // https://vercel.com/docs/concepts/functions/edge-caching
+  // Set edge function caching for faster load times, if route is not protected
   if (odpt === '') res.setHeader('Cache-Control', apiConfig.cacheControlHeader)
 
   // Check whether the size is valid - must be one of 'large', 'medium', or 'small'
@@ -27,24 +27,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(400).json({ error: 'Invalid size' })
     return
   }
+  
   // Sometimes the path parameter is defaulted to '[...path]' which we need to handle
   if (path === '[...path]') {
     res.status(400).json({ error: 'No path specified.' })
     return
   }
+  
   // If the path is not a valid path, return 400
   if (typeof path !== 'string') {
     res.status(400).json({ error: 'Path query invalid.' })
     return
   }
+  
   const cleanPath = pathPosix.resolve('/', pathPosix.normalize(path))
 
-  const { code, message } = await checkAuthRoute(cleanPath, accessToken, odpt as string)
+  const { code, message } = await checkAuthRoute(cleanPath, odpt as string)
   // Status code other than 200 means user has not authenticated yet
   if (code !== 200) {
     res.status(code).json({ error: message })
     return
   }
+  
   // If message is empty, then the path is not protected.
   // Conversely, protected routes are not allowed to serve from cache.
   if (message !== '') {
@@ -52,24 +56,96 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const requestPath = encodePath(cleanPath)
-  // Handle response from OneDrive API
-  const requestUrl = `${apiConfig.driveApi}/root${requestPath}`
-  // Whether path is root, which requires some special treatment
-  const isRoot = requestPath === ''
-
+  const absolutePath = resolveFilePath(requestPath)
+  
   try {
-    const { data } = await axios.get(`${requestUrl}${isRoot ? '' : ':'}/thumbnails`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-
-    const thumbnailUrl = data.value && data.value.length > 0 ? (data.value[0] as OdThumbnail)[size].url : null
-    if (thumbnailUrl) {
-      res.redirect(thumbnailUrl)
-    } else {
-      res.status(400).json({ error: "The item doesn't have a valid thumbnail." })
+    // Check if file exists
+    if (!await fsExists(absolutePath)) {
+      res.status(404).json({ error: 'File not found.' })
+      return
     }
+    
+    // Get file stats
+    const stats = await fsStat(absolutePath)
+    if (stats.isDirectory()) {
+      res.status(400).json({ error: 'Directories do not have thumbnails.' })
+      return
+    }
+    
+    // Get file extension
+    const extension = getExtension(absolutePath).toLowerCase()
+    
+    // Define size dimensions
+    const sizeMap = {
+      small: 96,
+      medium: 176,
+      large: 300
+    }
+    const dimension = sizeMap[size as keyof typeof sizeMap]
+    
+    // Process based on file type
+    if (['mp3', 'flac', 'ogg', 'm4a', 'wav'].includes(extension)) {
+      // For audio files, try to extract album art
+      if (extension === 'mp3') {
+        // Use NodeID3 to extract album art from MP3 files
+        const fileBuffer = await readFileContent(requestPath)
+        const tags = NodeID3.read(fileBuffer)
+        
+        // Check if album art exists
+        if (tags.image && typeof tags.image === 'object' && 'imageBuffer' in tags.image) {
+          // If album art exists, resize it and return
+          const imageBuffer = await sharp(tags.image.imageBuffer)
+            .resize(dimension, dimension, { fit: 'inside' })
+            .toBuffer()
+          
+          res.setHeader('Content-Type', 'image/jpeg')
+          res.send(imageBuffer)
+          return
+        }
+      }
+      
+      // If no album art or not an MP3 file, return an error
+      // to let the frontend display the default music note icon
+      res.status(400).json({ error: "The item doesn't have a valid thumbnail." })
+      return
+      
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(extension)) {
+      // For image files, read and resize
+      const imageBuffer = await readFileContent(requestPath)
+      const resizedImage = await sharp(imageBuffer)
+        .resize(dimension, dimension, { fit: 'inside' })
+        .toBuffer()
+      
+      res.setHeader('Content-Type', `image/${extension === 'jpg' ? 'jpeg' : extension}`)
+      res.send(resizedImage)
+      return
+      
+    } else if (['mp4', 'webm', 'avi', 'mov', 'mkv'].includes(extension)) {
+      // For video files, we would ideally extract a frame - for now use a placeholder
+      const placeholderImage = await sharp({
+        create: {
+          width: dimension,
+          height: Math.floor(dimension * 0.5625),  // 16:9 aspect ratio
+          channels: 4,
+          background: { r: 40, g: 40, b: 40, alpha: 1 }
+        }
+      })
+      .jpeg()
+      .toBuffer()
+      
+      res.setHeader('Content-Type', 'image/jpeg')
+      res.send(placeholderImage)
+      return
+      
+    } else {
+      // For other file types, return a blank thumbnail
+      res.status(400).json({ error: "The item doesn't have a valid thumbnail." })
+      return
+    }
+    
   } catch (error: any) {
-    res.status(error?.response?.status).json({ error: error?.response?.data ?? 'Internal server error.' })
+    console.error('Error generating thumbnail:', error)
+    res.status(500).json({ error: 'Internal server error.' })
+    return
   }
-  return
 }
