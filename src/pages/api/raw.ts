@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import Cors from 'cors'
 import { posix as pathPosix } from 'path'
-import { streamFileContent } from '../../utils/fileSystemHandler'
+import path from 'path'
+import { streamFileContent, readFileContent } from '../../utils/fileSystemHandler'
 import { checkAuthRoute, encodePath } from './index'
 import siteConfig from '../../../config/site.config'
 
@@ -83,6 +84,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     // Get the encoded path for file system
     const requestPath = encodePath(cleanPath)
+    
+    // Special handling for m4a files
+    if (cleanPath.toLowerCase().endsWith('.m4a')) {
+      // Ensure CORS headers are applied
+      await runCorsMiddleware(req, res);
+      
+      const fileBuffer = await readFileContent(requestPath);
+      const fileName = cleanPath.split('/').pop() || 'audio.m4a';
+      
+      res.setHeader('Content-Type', 'audio/mp4');
+      res.setHeader('Content-Length', fileBuffer.length);
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(fileName)}"`);
+      res.status(200).send(fileBuffer);
+      return;
+    }
     
     // Check for range header to support partial content requests (streaming)
     const rangeHeader = req.headers.range

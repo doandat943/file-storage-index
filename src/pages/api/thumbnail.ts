@@ -3,9 +3,9 @@ import { posix as pathPosix } from 'path'
 import fs from 'fs'
 import { promisify } from 'util'
 // @ts-ignore
-import NodeID3 from 'node-id3'
-// @ts-ignore
 import sharp from 'sharp'
+// @ts-ignore
+import * as mm from 'music-metadata'
 import { checkAuthRoute, encodePath } from '.'
 import apiConfig from '../../../config/api.config'
 import { getExtension } from '../../utils/getFileIcon'
@@ -85,29 +85,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     // Process based on file type
     if (['mp3', 'flac', 'ogg', 'm4a', 'wav'].includes(extension)) {
-      // For audio files, try to extract album art
-      if (extension === 'mp3') {
-        // Use NodeID3 to extract album art from MP3 files
-        const fileBuffer = await readFileContent(requestPath)
-        const tags = NodeID3.read(fileBuffer)
+      let imageBuffer: Buffer | null = null;
+      const fileBuffer = await readFileContent(requestPath);
+      
+      // Use music-metadata for all audio formats
+      try {
+        const metadata = await mm.parseBuffer(fileBuffer as unknown as Uint8Array);
         
-        // Check if album art exists
-        if (tags.image && typeof tags.image === 'object' && 'imageBuffer' in tags.image) {
-          // If album art exists, resize it and return
-          const imageBuffer = await sharp(tags.image.imageBuffer)
-            .resize(dimension, dimension, { fit: 'inside' })
-            .toBuffer()
-          
-          res.setHeader('Content-Type', 'image/jpeg')
-          res.send(imageBuffer)
-          return
+        // Extract picture if available
+        if (metadata.common.picture && metadata.common.picture.length > 0) {
+          imageBuffer = Buffer.from(metadata.common.picture[0].data);
         }
+      } catch (error) {
+        console.error('Error extracting metadata:', error);
       }
       
-      // If no album art or not an MP3 file, return an error
-      // to let the frontend display the default music note icon
-      res.status(400).json({ error: "The item doesn't have a valid thumbnail." })
-      return
+      // If we have album art, resize and return it
+      if (imageBuffer) {
+        const resizedImage = await sharp(imageBuffer as unknown as Uint8Array)
+          .resize(dimension, dimension, { fit: 'inside' })
+          .toBuffer();
+        
+        res.setHeader('Content-Type', 'image/jpeg');
+        res.send(resizedImage);
+        return;
+      }
+      
+      // If no album art, return error to show default icon
+      res.status(400).json({ error: "The item doesn't have a valid thumbnail." });
+      return;
       
     } else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(extension)) {
       // For image files, read and resize
