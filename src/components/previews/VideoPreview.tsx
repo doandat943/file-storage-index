@@ -1,6 +1,6 @@
 import type { OdFileObject } from '../../types'
 
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
 import dynamic from 'next/dynamic'
@@ -21,7 +21,12 @@ import Loading from '../Loading'
 import CustomEmbedLinkMenu from '../CustomEmbedLinkMenu'
 
 // Dynamic import of Plyr with ssr: false to ensure it's only loaded on the client side
-const Plyr = dynamic(() => import('plyr-react'), { ssr: false })
+const Plyr = dynamic(() => import('plyr-react'), { 
+  ssr: false,
+  loading: () => <div className="h-full w-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+    <Loading loadingText="Loading video player..." />
+  </div>
+})
 
 // Import Plyr CSS
 import 'plyr-react/plyr.css'
@@ -36,46 +41,135 @@ const VideoPlayer: FC<{
   isFlv: boolean
   mpegts: any
 }> = ({ videoName, videoUrl, width, height, thumbnail, subtitle, isFlv, mpegts }) => {
-  useEffect(() => {
-    // Really really hacky way to inject subtitles as file blobs into the video element
-    axios
-      .get(subtitle, { responseType: 'blob' })
-      .then(resp => {
-        const track = document.querySelector('track')
-        track?.setAttribute('src', URL.createObjectURL(resp.data))
-      })
-      .catch(() => {
-        console.log('Could not load subtitle.')
-      })
+  const [playerReady, setPlayerReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const playerRef = useRef(null);
 
-    if (isFlv) {
-      const loadFlv = () => {
-        // Really hacky way to get the exposed video element from Plyr
-        const video = document.getElementById('plyr')
-        const flv = mpegts.createPlayer({ url: videoUrl, type: 'flv' })
-        flv.attachMediaElement(video)
-        flv.load()
-      }
-      loadFlv()
+  // Verify subtitle validity before adding to config
+  const [validSubtitle, setValidSubtitle] = useState(false);
+  
+  useEffect(() => {
+    // Check if subtitle file exists
+    if (subtitle) {
+      const checkSubtitle = async () => {
+        try {
+          const response = await fetch(subtitle, { method: 'HEAD' });
+          setValidSubtitle(response.ok);
+        } catch (e) {
+          console.log('Subtitle file not found or inaccessible');
+          setValidSubtitle(false);
+        }
+      };
+      checkSubtitle();
     }
-  }, [videoUrl, isFlv, mpegts, subtitle])
+  }, [subtitle]);
+
+  // FLV handling with mpegts.js
+  useEffect(() => {
+    if (isFlv && mpegts && playerReady) {
+      try {
+        // Get the video element after Plyr is initialized
+        const video = document.getElementById('plyr');
+        if (video) {
+          const flvPlayer = mpegts.createPlayer({ 
+            url: videoUrl, 
+            type: 'flv' 
+          });
+          flvPlayer.attachMediaElement(video);
+          flvPlayer.load();
+          
+          return () => {
+            flvPlayer.destroy();
+          };
+        }
+      } catch (err) {
+        console.error('FLV player error:', err);
+        setError('Failed to initialize FLV player');
+      }
+    }
+  }, [videoUrl, isFlv, mpegts, playerReady]);
+
+  // Handle component mount/unmount
+  useEffect(() => {
+    setPlayerReady(true);
+    
+    return () => {
+      setPlayerReady(false);
+    };
+  }, []);
+
+  if (error) {
+    return <div className="w-full h-full flex items-center justify-center text-red-500">
+      <p>{error}</p>
+    </div>;
+  }
 
   // Common plyr configs, including the video source and plyr options
-  const plyrSource = {
+  const plyrSource: any = {
     type: 'video',
     title: videoName,
-    poster: thumbnail,
-    tracks: [{ kind: 'captions', label: videoName, src: '', default: true }],
+  };
+  
+  // Only add poster if thumbnail is valid
+  if (thumbnail) {
+    plyrSource.poster = thumbnail;
   }
+  
+  // Add optional tracks if subtitle exists and is valid
+  if (validSubtitle) {
+    plyrSource.tracks = [{ 
+      kind: 'captions', 
+      label: videoName, 
+      src: subtitle, 
+      default: true 
+    }];
+  }
+  
+  // Safe default ratio if width/height not provided
+  const ratio = width && height ? `${width}:${height}` : '16:9';
+  
   const plyrOptions: Plyr.Options = {
-    ratio: `${width ?? 16}:${height ?? 9}`,
+    ratio,
     fullscreen: { iosNative: true },
-  }
+    captions: { active: true, update: true },
+  };
+  
+  // Only add sources for non-FLV files
   if (!isFlv) {
-    // If the video is not in flv format, we can use the native plyr and add sources directly with the video URL
-    plyrSource['sources'] = [{ src: videoUrl }]
+    plyrSource.sources = [{ 
+      src: videoUrl,
+      type: getVideoMimeType(videoName)
+    }];
   }
-  return <Plyr id="plyr" source={plyrSource as Plyr.SourceInfo} options={plyrOptions} />
+  
+  try {
+    return <Plyr 
+      id="plyr" 
+      source={plyrSource as Plyr.SourceInfo} 
+      options={plyrOptions} 
+      ref={playerRef}
+    />;
+  } catch (err) {
+    console.error('Plyr initialization error:', err);
+    return <div className="w-full h-full flex items-center justify-center text-red-500">
+      <p>Failed to initialize video player</p>
+    </div>;
+  }
+};
+
+// Helper to determine video MIME type
+function getVideoMimeType(filename: string): string {
+  const ext = getExtension(filename).toLowerCase();
+  const mimeTypes: {[key: string]: string} = {
+    'mp4': 'video/mp4',
+    'webm': 'video/webm',
+    'ogg': 'video/ogg',
+    'mov': 'video/quicktime',
+    'mkv': 'video/x-matroska',
+    'm4v': 'video/mp4'
+  };
+  
+  return mimeTypes[ext] || '';
 }
 
 const VideoPreview: FC<{ file: OdFileObject }> = ({ file }) => {
@@ -84,6 +178,7 @@ const VideoPreview: FC<{ file: OdFileObject }> = ({ file }) => {
   const clipboard = useClipboard()
 
   const [menuOpen, setMenuOpen] = useState(false)
+  const [playerError, setPlayerError] = useState<string | null>(null)
   const { t } = useTranslation()
 
   // OneDrive generates thumbnails for its video files, we pick the thumbnail with the highest resolution
@@ -103,16 +198,23 @@ const VideoPreview: FC<{ file: OdFileObject }> = ({ file }) => {
     result: mpegts,
   } = useAsync(async () => {
     if (isFlv) {
-      return (await import('mpegts.js')).default
+      try {
+        return (await import('mpegts.js')).default;
+      } catch (err) {
+        console.error('Failed to load mpegts.js:', err);
+        setPlayerError('Failed to load FLV player module');
+        return null;
+      }
     }
+    return null;
   }, [isFlv])
 
   return (
     <>
       <CustomEmbedLinkMenu path={asPath} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <PreviewContainer>
-        {error ? (
-          <FourOhFour errorMsg={error.message} />
+        {error || playerError ? (
+          <FourOhFour errorMsg={error?.message || playerError || 'Failed to initialize video player'} />
         ) : loading && isFlv ? (
           <Loading loadingText={t('Loading FLV extension...')} />
         ) : (
