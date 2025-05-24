@@ -1,62 +1,101 @@
-import axios from 'axios'
 import type { NextApiRequest, NextApiResponse } from 'next'
-
-import { encodePath, getAccessToken } from '.'
+import { encodePath } from '.'
 import apiConfig from '../../../config/api.config'
-import siteConfig from '../../../config/site.config'
+import { HTTP } from '../../utils/constants'
+import { withErrorHandling } from '../../utils/errorHandler'
+import fs from 'fs'
+import path from 'path'
+import type { SearchResult } from '../../types'
 
 /**
  * Sanitize the search query
  *
  * @param query User search query, which may contain special characters
- * @returns Sanitised query string, which:
- * - encodes the '<' and '>' characters,
- * - replaces '?' and '/' characters with ' ',
- * - replaces ''' with ''''
- * Reference: https://stackoverflow.com/questions/41491222/single-quote-escaping-in-microsoft-graph.
+ * @returns Sanitised query string
  */
 function sanitiseQuery(query: string): string {
-  const sanitisedQuery = query
-    .replace(/'/g, "''")
-    .replace('<', ' &lt; ')
-    .replace('>', ' &gt; ')
-    .replace('?', ' ')
-    .replace('/', ' ')
-  return encodeURIComponent(sanitisedQuery)
+  return query
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // escape regex chars
+    .trim()
+    .toLowerCase()
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Get access token from storage
-  const accessToken = await getAccessToken()
+/**
+ * Search files and folders from local file system
+ * 
+ * @param query Search query
+ * @param basePath Base path to search
+ * @returns Array of search results
+ */
+const searchFiles = withErrorHandling(async (query: string, basePath: string): Promise<SearchResult> => {
+  const storageDir = apiConfig.storageConfig.fileDirectory
+  const searchPath = path.join(storageDir, basePath)
+  const sanitizedQuery = sanitiseQuery(query)
+  
+  const results: SearchResult = []
+  
+  // Recursive function to traverse directory
+  const walkDir = (dir: string, relativePath: string) => {
+    const files = fs.readdirSync(dir, { withFileTypes: true })
+    
+    for (const file of files) {
+      const filePath = path.join(dir, file.name)
+      const relativeFilePath = path.join(relativePath, file.name)
+      
+      // Check if file/directory name contains query
+      if (file.name.toLowerCase().includes(sanitizedQuery)) {
+        const stats = fs.statSync(filePath)
+        
+        results.push({
+          id: relativeFilePath,
+          name: file.name,
+          path: relativeFilePath,
+          size: stats.size,
+          lastModifiedDateTime: stats.mtime.toISOString(),
+          ...(file.isDirectory() ? { folder: { childCount: 0 } } : { 
+            file: { 
+              mimeType: 'application/octet-stream' 
+            } 
+          })
+        })
+      }
+      
+      // If it's a directory, search recursively
+      if (file.isDirectory()) {
+        walkDir(filePath, relativeFilePath)
+      }
+    }
+  }
+  
+  try {
+    walkDir(searchPath, '')
+    return results
+  } catch (error) {
+    console.error('Error searching files:', error)
+    return []
+  }
+})
 
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Query parameter from request
   const { q: searchQuery = '' } = req.query
 
-  // Set edge function caching for faster load times, check docs:
-  // https://vercel.com/docs/concepts/functions/edge-caching
-  res.setHeader('Cache-Control', apiConfig.cacheControlHeader)
+  // Set edge function caching for faster load times
+  res.setHeader(HTTP.HEADERS.CACHE_CONTROL, apiConfig.cacheControlHeader)
 
-  if (typeof searchQuery === 'string') {
-    // Construct Microsoft Graph Search API URL, and perform search only under the base directory
-    const searchRootPath = encodePath('/')
-    const encodedPath = searchRootPath === '' ? searchRootPath : searchRootPath + ':'
-
-    const searchApi = `${apiConfig.driveApi}/root${encodedPath}/search(q='${sanitiseQuery(searchQuery)}')`
-
+  if (typeof searchQuery === 'string' && searchQuery.trim() !== '') {
     try {
-      const { data } = await axios.get(searchApi, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        params: {
-          select: 'id,name,file,folder,parentReference',
-          top: siteConfig.maxItems,
-        },
-      })
-      res.status(200).json(data.value)
+      // Search files in local file system
+      const searchRootPath = encodePath('/')
+      const results = await searchFiles(searchQuery, searchRootPath)
+      res.status(HTTP.STATUS.OK).json(results)
     } catch (error: any) {
-      res.status(error?.response?.status ?? 500).json({ error: error?.response?.data ?? 'Internal server error.' })
+      res.status(HTTP.STATUS.INTERNAL_SERVER_ERROR).json({ 
+        error: 'Internal server error.',
+        details: error.message 
+      })
     }
   } else {
-    res.status(200).json([])
+    res.status(HTTP.STATUS.OK).json([])
   }
-  return
 }

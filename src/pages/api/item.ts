@@ -1,24 +1,22 @@
+import { getItemById } from '../../utils/fileHandler'
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { getItemById } from '../../utils/fileSystemHandler'
+import { HTTP } from '../../utils/constants'
+import { handleApiError } from '../../utils/errorHandler'
+import { ErrorCode } from '../../utils/errorHandler'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Get ID from query params
+  // Lấy ID từ tham số truy vấn
   const { id = '' } = req.query
   if (typeof id !== 'string') {
-    res.status(400).json({ error: 'Invalid ID.' })
+    res.status(HTTP.STATUS.BAD_REQUEST).json({ error: 'ID không hợp lệ.', code: ErrorCode.INVALID_PARAMS })
     return
   }
 
   try {
-    // Get item info by ID (file or folder)
+    // Lấy thông tin mục theo ID (file hoặc thư mục)
     const item = await getItemById(id)
-    res.status(200).json(item)
-  } catch (error: any) {
-    if (error.message === 'Item not found') {
-      res.status(404).json({ error: 'Item not found.' })
-    } else {
-      console.error('Error getting item by ID:', error)
-      res.status(500).json({ error: 'Internal server error.' })
-    }
+    res.status(HTTP.STATUS.OK).json(item)
+  } catch (error: unknown) {
+    handleApiError(error, res, 'api/item')
   }
 }

@@ -3,8 +3,10 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import Cors from 'cors'
 import apiConfig from '../../../config/api.config'
 import siteConfig from '../../../config/site.config'
-import { compareHashedToken } from '../../utils/protectedRouteHandler'
-import { getFolderContents, getFileInfo, ensureStorageDir, readFileContent } from '../../utils/fileSystemHandler'
+import { compareHashedToken } from '../../utils/authHandler'
+import { getFolderContents, getFileInfo, ensureStorageDir, readFileContent } from '../../utils/fileHandler'
+import { HTTP, CACHE_CONTROL } from '../../utils/constants'
+import { handleApiError, createRequestError } from '../../utils/errorHandler'
 
 // CORS middleware for raw links
 const cors = Cors({ methods: ['GET', 'HEAD'] })
@@ -40,8 +42,7 @@ export function encodePath(path: string): string {
  * @returns Path to required auth token. If not required, return empty string.
  */
 export function getAuthTokenPath(path: string) {
-  // Ensure trailing slashes to compare paths component by component. Same for protectedRoutes.
-  // Since paths are case insensitive, lower case before comparing. Same for protectedRoutes.
+  // Ensure trailing slashes to compare paths component by component
   path = path.toLowerCase() + '/'
   const protectedRoutes = siteConfig.protectedRoutes as string[]
   let authTokenPath = ''
@@ -70,13 +71,13 @@ export function getAuthTokenPath(path: string) {
 export async function checkAuthRoute(
   cleanPath: string,
   odTokenHeader: string
-): Promise<{ code: 200 | 401 | 404 | 500; message: string }> {
+): Promise<{ code: number; message: string }> {
   // Handle authentication through .password
   const authTokenPath = getAuthTokenPath(cleanPath)
 
   // Fetch password from file content
   if (authTokenPath === '') {
-    return { code: 200, message: '' }
+    return { code: HTTP.STATUS.OK, message: '' }
   }
 
   try {
@@ -90,70 +91,68 @@ export async function checkAuthRoute(
         dotPassword: odProtectedToken,
       })
     ) {
-      return { code: 401, message: 'Password required.' }
+      return { code: HTTP.STATUS.UNAUTHORIZED, message: 'Password required.' }
     }
   } catch (error: any) {
     // Password file not found, fallback to 404
     if (error.message === 'File not found') {
-      return { code: 404, message: "You didn't set a password." }
+      return { code: HTTP.STATUS.NOT_FOUND, message: "You didn't set a password." }
     } else {
-      return { code: 500, message: 'Internal server error.' }
+      return { code: HTTP.STATUS.INTERNAL_SERVER_ERROR, message: 'Internal server error.' }
     }
   }
 
-  return { code: 200, message: 'Authenticated.' }
+  return { code: HTTP.STATUS.OK, message: 'Authenticated.' }
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Ensure storage directory exists
-  await ensureStorageDir()
-
-  // If method is GET, then the API is a normal request for files or folders
-  const { path = '/', raw = false, next = '', sort = '' } = req.query
-
-  // Set edge function caching for faster load times, check docs:
-  // https://vercel.com/docs/concepts/functions/edge-caching
-  res.setHeader('Cache-Control', apiConfig.cacheControlHeader)
-
-  // Sometimes the path parameter is defaulted to '[...path]' which we need to handle
-  if (path === '[...path]') {
-    res.status(400).json({ error: 'No path specified.' })
-    return
-  }
-  // If the path is not a valid path, return 400
-  if (typeof path !== 'string') {
-    res.status(400).json({ error: 'Path query invalid.' })
-    return
-  }
-  // Besides normalizing and making absolute, trailing slashes are trimmed
-  const cleanPath = pathPosix.resolve('/', pathPosix.normalize(path)).replace(/\/$/, '')
-
-  // Validate sort param
-  if (typeof sort !== 'string') {
-    res.status(400).json({ error: 'Sort query invalid.' })
-    return
-  }
-
-  // Handle protected routes authentication
-  const { code, message } = await checkAuthRoute(cleanPath, req.headers['od-protected-token'] as string)
-  // Status code other than 200 means user has not authenticated yet
-  if (code !== 200) {
-    res.status(code).json({ error: message })
-    return
-  }
-  // If message is empty, then the path is not protected.
-  // Conversely, protected routes are not allowed to serve from cache.
-  if (message !== '') {
-    res.setHeader('Cache-Control', 'no-cache')
-  }
-
-  const requestPath = encodePath(cleanPath)
-
   try {
+    // Ensure storage directory exists
+    await ensureStorageDir()
+
+    // If method is GET, then the API is a normal request for files or folders
+    const { path = '/', raw = false, next = '', sort = '' } = req.query
+
+    // Set edge function caching for faster load times
+    res.setHeader(HTTP.HEADERS.CACHE_CONTROL, apiConfig.cacheControlHeader)
+
+    // Sometimes the path parameter is defaulted to '[...path]' which we need to handle
+    if (path === '[...path]') {
+      throw createRequestError.invalidPath('No path specified.')
+    }
+    
+    // If the path is not a valid path, return 400
+    if (typeof path !== 'string') {
+      throw createRequestError.invalidPath('Path query invalid.')
+    }
+    
+    // Normalize and make absolute, then trim trailing slashes
+    const cleanPath = pathPosix.resolve('/', pathPosix.normalize(path)).replace(/\/$/, '')
+
+    // Validate sort param
+    if (typeof sort !== 'string') {
+      throw createRequestError.invalidParams('Sort query invalid.')
+    }
+
+    // Handle protected routes authentication
+    const { code, message } = await checkAuthRoute(cleanPath, req.headers['od-protected-token'] as string)
+    // Status code other than 200 means user has not authenticated yet
+    if (code !== HTTP.STATUS.OK) {
+      res.status(code).json({ error: message })
+      return
+    }
+    // If message is not empty, then the path is protected.
+    // Conversely, protected routes are not allowed to serve from cache.
+    if (message !== '') {
+      res.setHeader(HTTP.HEADERS.CACHE_CONTROL, CACHE_CONTROL.NO_CACHE)
+    }
+
+    const requestPath = encodePath(cleanPath)
+
     // Go for file raw download link, add CORS headers
     if (raw) {
       await runCorsMiddleware(req, res)
-      res.setHeader('Cache-Control', 'no-cache')
+      res.setHeader(HTTP.HEADERS.CACHE_CONTROL, CACHE_CONTROL.NO_CACHE)
 
       try {
         // Get file info
@@ -163,20 +162,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const fileContent = await readFileContent(requestPath)
         
         // Set appropriate headers
-        res.setHeader('Content-Type', fileInfo.file.mimeType)
-        res.setHeader('Content-Length', fileInfo.size)
-        res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(fileInfo.name)}"`)
+        res.setHeader(HTTP.HEADERS.CONTENT_TYPE, fileInfo.file.mimeType)
+        res.setHeader(HTTP.HEADERS.CONTENT_LENGTH, fileInfo.size)
+        res.setHeader(HTTP.HEADERS.CONTENT_DISPOSITION, `inline; filename="${encodeURIComponent(fileInfo.name)}"`)
         
         // Return the file content
-        res.status(200).send(fileContent)
+        res.status(HTTP.STATUS.OK).send(fileContent)
       } catch (error: any) {
-        if (error.message === 'File not found') {
-          res.status(404).json({ error: 'File not found.' })
-        } else if (error.message === 'Not a file') {
-          res.status(400).json({ error: 'Path is not a file.' })
-        } else {
-          res.status(500).json({ error: 'Internal server error.' })
-        }
+        handleApiError(error, res, 'api/raw')
       }
 
       return
@@ -187,30 +180,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Try to get file info first
       const fileInfo = await getFileInfo(requestPath)
       // If no error, it's a file
-      res.status(200).json({ file: fileInfo })
+      res.status(HTTP.STATUS.OK).json({ file: fileInfo })
     } catch (fileError: any) {
       // If not a file, try to get folder contents
       if (fileError.message === 'File not found' || fileError.message === 'Not a file') {
         try {
           const folderContents = await getFolderContents(requestPath)
-          res.status(200).json({ folder: folderContents })
+          res.status(HTTP.STATUS.OK).json({ folder: folderContents })
         } catch (folderError: any) {
-          if (folderError.message === 'Folder not found') {
-            res.status(404).json({ error: 'Resource not found.' })
-          } else if (folderError.message === 'Not a directory') {
-            res.status(400).json({ error: 'Path is not a directory.' })
-          } else {
-            console.error('Folder error:', folderError)
-            res.status(500).json({ error: 'Internal server error.' })
-          }
+          handleApiError(folderError, res, 'api/folder')
         }
       } else {
-        console.error('File error:', fileError)
-        res.status(500).json({ error: 'Internal server error.' })
+        handleApiError(fileError, res, 'api/file')
       }
     }
-  } catch (error: any) {
-    console.error('General error:', error)
-    res.status(500).json({ error: 'Internal server error.' })
+  } catch (error: unknown) {
+    handleApiError(error, res, 'api')
   }
 }
