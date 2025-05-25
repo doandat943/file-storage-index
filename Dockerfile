@@ -1,20 +1,23 @@
 # Base image using Node.js
 FROM node:alpine AS base
 
+# Install pnpm
+RUN npm install -g pnpm
+
 # Install dependencies
 FROM base AS deps
 WORKDIR /app
 
-# Copy package.json and package-lock.json (if exists)
-COPY package.json package-lock.json* ./
-RUN npm ci
+# Copy package.json and pnpm-lock.yaml (if exists)
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install
 
 # Build the application
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+RUN pnpm build
 
 # Create production image
 FROM base AS runner
@@ -43,4 +46,4 @@ USER nextjs
 EXPOSE 3000
 
 # Run the application
-CMD ["npm", "start"] 
+CMD ["pnpm", "start"] 
