@@ -1,4 +1,4 @@
-import type { OdFolderChildren } from '../types'
+import type { FolderChildren } from '../types'
 
 import Link from 'next/link'
 import { FC } from 'react'
@@ -12,7 +12,7 @@ import { humanFileSize, formatModifiedDateTime } from '../utils/fileDetails'
 import { Downloading, Checkbox, ChildIcon, ChildName } from './FileListing'
 import { getStoredToken } from '../utils/protectedRouteHandler'
 
-const FileListItem: FC<{ fileContent: OdFolderChildren }> = ({ fileContent: c }) => {
+const FileListItem: FC<{ fileContent: FolderChildren }> = ({ fileContent: c }) => {
   return (
     <div className="grid cursor-pointer grid-cols-10 items-center space-x-2 px-3 py-2.5">
       <div className="col-span-10 flex items-center space-x-2 truncate md:col-span-6" title={c.name}>
@@ -103,7 +103,7 @@ const FolderListLayout = ({
         </div>
       </div>
 
-      {folderChildren.map((c: OdFolderChildren) => (
+      {folderChildren.map((c: FolderChildren) => (
         <div
           className="grid grid-cols-12 transition-all duration-100 hover:bg-gray-100 dark:hover:bg-gray-850"
           key={c.id}

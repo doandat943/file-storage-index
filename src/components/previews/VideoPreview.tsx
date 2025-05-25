@@ -1,4 +1,4 @@
-import type { OdFileObject } from '../../types'
+import type { FileObject } from '../../types'
 
 import { FC, useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/router'
@@ -172,7 +172,7 @@ function getVideoMimeType(filename: string): string {
   return mimeTypes[ext] || '';
 }
 
-const VideoPreview: FC<{ file: OdFileObject }> = ({ file }) => {
+const VideoPreview: FC<{ file: FileObject }> = ({ file }) => {
   const { asPath } = useRouter()
   const hashedToken = getStoredToken(asPath)
   const clipboard = useClipboard()

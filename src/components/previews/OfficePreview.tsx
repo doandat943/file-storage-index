@@ -1,4 +1,4 @@
-import type { OdFileObject } from '../../types'
+import type { FileObject } from '../../types'
 import { FC, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 
@@ -9,7 +9,7 @@ import { DownloadBtnContainer } from './Containers'
 import { getBaseUrl } from '../../utils/getBaseUrl'
 import { getStoredToken } from '../../utils/protectedRouteHandler'
 
-const OfficePreview: FC<{ file: OdFileObject }> = ({ file }) => {
+const OfficePreview: FC<{ file: FileObject }> = ({ file }) => {
   const { asPath } = useRouter()
   const hashedToken = getStoredToken(asPath)
 

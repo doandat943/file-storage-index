@@ -1,4 +1,4 @@
-import type { OdFileObject, OdFolderChildren, OdFolderObject } from '../types'
+import type { FileObject, FolderChildren, FolderObject } from '../types'
 import { ParsedUrlQuery } from 'querystring'
 import { FC, MouseEventHandler, SetStateAction, useEffect, useRef, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -80,7 +80,7 @@ export const ChildName: FC<{ name: string; folder?: boolean }> = ({ name, folder
     </span>
   )
 }
-export const ChildIcon: FC<{ child: OdFolderChildren }> = ({ child }) => {
+export const ChildIcon: FC<{ child: FolderChildren }> = ({ child }) => {
   const { render, emoji } = renderEmoji(child.name)
   return render ? (
     <span>{emoji ? emoji[0] : '📁'}</span>
@@ -190,7 +190,7 @@ const FileListing: FC<{ query?: ParsedUrlQuery }> = ({ query }) => {
 
   if ('folder' in responses[0]) {
     // Expand list of API returns into flattened file data
-    const folderChildren = [].concat(...responses.map(r => r.folder.value)) as OdFolderObject['value']
+    const folderChildren = [].concat(...responses.map(r => r.folder.value)) as FolderObject['value']
 
     // Find README.md file to render
     const readmeFile = folderChildren.find(c => c.name.toLowerCase() === 'readme.md')
@@ -385,7 +385,7 @@ const FileListing: FC<{ query?: ParsedUrlQuery }> = ({ query }) => {
   }
 
   if ('file' in responses[0] && responses.length === 1) {
-    const file = responses[0].file as OdFileObject
+    const file = responses[0].file as FileObject
     const previewType = getPreviewType(getExtension(file.name), { video: Boolean(file.video) })
 
     if (previewType) {

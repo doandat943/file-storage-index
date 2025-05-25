@@ -1,4 +1,4 @@
-import type { OdFileObject } from '../../types'
+import type { FileObject } from '../../types'
 import { FC } from 'react'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -10,7 +10,7 @@ import { formatModifiedDateTime, humanFileSize } from '../../utils/fileDetails'
 import DownloadButtonGroup from '../DownloadBtnGtoup'
 import { DownloadBtnContainer, PreviewContainer } from './Containers'
 
-const DefaultPreview: FC<{ file: OdFileObject }> = ({ file }) => {
+const DefaultPreview: FC<{ file: FileObject }> = ({ file }) => {
   const { t } = useTranslation()
 
   return (
@@ -39,35 +39,8 @@ const DefaultPreview: FC<{ file: OdFileObject }> = ({ file }) => {
             </div>
 
             <div>
-              <div className="py-2 text-xs font-medium uppercase opacity-80">{t('Hashes')}</div>
-              <table className="block w-full overflow-scroll whitespace-nowrap text-sm md:table">
-                <tbody>
-                  <tr className="border-y bg-white dark:border-gray-700 dark:bg-gray-900">
-                    <td className="bg-gray-50 py-1 px-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:bg-gray-800 dark:text-gray-400">
-                      Quick XOR
-                    </td>
-                    <td className="whitespace-nowrap py-1 px-3 font-mono text-gray-500 dark:text-gray-400">
-                      {file.file.hashes?.quickXorHash ?? t('Unavailable')}
-                    </td>
-                  </tr>
-                  <tr className="border-y bg-white dark:border-gray-700 dark:bg-gray-900">
-                    <td className="bg-gray-50 py-1 px-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:bg-gray-800 dark:text-gray-400">
-                      SHA1
-                    </td>
-                    <td className="whitespace-nowrap py-1 px-3 font-mono text-gray-500 dark:text-gray-400">
-                      {file.file.hashes?.sha1Hash ?? t('Unavailable')}
-                    </td>
-                  </tr>
-                  <tr className="border-y bg-white dark:border-gray-700 dark:bg-gray-900">
-                    <td className="bg-gray-50 py-1 px-3 text-left text-xs font-medium uppercase tracking-wider text-gray-700 dark:bg-gray-800 dark:text-gray-400">
-                      SHA256
-                    </td>
-                    <td className="whitespace-nowrap py-1 px-3 font-mono text-gray-500 dark:text-gray-400">
-                      {file.file.hashes?.sha256Hash ?? t('Unavailable')}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div className="py-2 text-xs font-medium uppercase opacity-80">{t('File ID')}</div>
+              <div className="font-mono text-sm">{file.id}</div>
             </div>
           </div>
         </div>

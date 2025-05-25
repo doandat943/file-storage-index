@@ -5,15 +5,15 @@ import { handleApiError } from '../../utils/errorHandler'
 import { ErrorCode } from '../../utils/errorHandler'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Lấy ID từ tham số truy vấn
+  // Get ID from query parameters
   const { id = '' } = req.query
   if (typeof id !== 'string') {
-    res.status(HTTP.STATUS.BAD_REQUEST).json({ error: 'ID không hợp lệ.', code: ErrorCode.INVALID_PARAMS })
+    res.status(HTTP.STATUS.BAD_REQUEST).json({ error: 'Invalid ID.', code: ErrorCode.INVALID_PARAMS })
     return
   }
 
   try {
-    // Lấy thông tin mục theo ID (file hoặc thư mục)
+    // Get item information by ID (file or folder)
     const item = await getItemById(id)
     res.status(HTTP.STATUS.OK).json(item)
   } catch (error: unknown) {

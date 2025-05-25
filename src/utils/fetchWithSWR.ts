@@ -1,7 +1,7 @@
 import axios from 'axios'
 import useSWRInfinite from 'swr/infinite'
 
-import type { OdAPIResponse } from '../types'
+import type { APIResponse } from '../types'
 
 import { getStoredToken } from './protectedRouteHandler'
 
@@ -35,7 +35,7 @@ export function useProtectedSWRInfinite(path: string = '') {
    * @param path Directory path
    * @returns API to the next page
    */
-  function getNextKey(pageIndex: number, previousPageData: OdAPIResponse): (string | null)[] | null {
+  function getNextKey(pageIndex: number, previousPageData: APIResponse): (string | null)[] | null {
     // Reached the end of the collection
     if (previousPageData && !previousPageData.folder) return null
 

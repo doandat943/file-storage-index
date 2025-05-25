@@ -1,4 +1,4 @@
-import type { OdFileObject } from '../../types'
+import type { FileObject } from '../../types'
 import { FC, useEffect, useRef, useState } from 'react'
 
 import ReactAudioPlayer from 'react-audio-player'
@@ -19,7 +19,7 @@ enum PlayerState {
   Paused,
 }
 
-const AudioPreview: FC<{ file: OdFileObject }> = ({ file }) => {
+const AudioPreview: FC<{ file: FileObject }> = ({ file }) => {
   const { t } = useTranslation()
   const { asPath } = useRouter()
   const hashedToken = getStoredToken(asPath)

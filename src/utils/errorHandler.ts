@@ -9,7 +9,7 @@ export enum ErrorCode {
   FILE_NOT_FOUND = 'FILE_NOT_FOUND',
   FOLDER_NOT_FOUND = 'FOLDER_NOT_FOUND',
   NOT_A_FILE = 'NOT_A_FILE',
-  NOT_A_DIRECTORY = 'NOT_A_DIRECTORY',
+  NOT_A_FOLDER = 'NOT_A_FOLDER',
   ITEM_NOT_FOUND = 'ITEM_NOT_FOUND',
   
   // Authorization errors
@@ -72,9 +72,9 @@ export const createFileSystemError = {
     true
   ),
   
-  notADirectory: (path?: string) => new AppError(
-    ErrorCode.NOT_A_DIRECTORY,
-    `Resource is not a directory${path ? `: ${path}` : ''}`,
+  notAFolder: (path?: string) => new AppError(
+    ErrorCode.NOT_A_FOLDER,
+    `Resource is not a folder${path ? `: ${path}` : ''}`,
     400,
     true
   ),

@@ -1,4 +1,4 @@
-import type { OdFolderChildren } from '../types'
+import type { FolderChildren } from '../types'
 
 import Link from 'next/link'
 import { useState } from 'react'
@@ -11,7 +11,7 @@ import { formatModifiedDateTime } from '../utils/fileDetails'
 import { Checkbox, ChildIcon, ChildName, Downloading } from './FileListing'
 import { getStoredToken } from '../utils/protectedRouteHandler'
 
-const GridItem = ({ c, path }: { c: OdFolderChildren; path: string }) => {
+const GridItem = ({ c, path }: { c: FolderChildren; path: string }) => {
   // We use the generated medium thumbnail for rendering preview images (excluding folders)
   const hashedToken = getStoredToken(path)
   const thumbnailUrl =
@@ -114,7 +114,7 @@ const FolderGridLayout = ({
       </div>
 
       <div className="grid grid-cols-2 gap-3 p-3 md:grid-cols-4">
-        {folderChildren.map((c: OdFolderChildren) => (
+        {folderChildren.map((c: FolderChildren) => (
           <div
             key={c.id}
             className="group relative overflow-hidden rounded transition-all duration-100 hover:bg-gray-100 dark:hover:bg-gray-850"

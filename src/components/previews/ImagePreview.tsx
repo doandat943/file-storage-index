@@ -1,4 +1,4 @@
-import type { OdFileObject } from '../../types'
+import type { FileObject } from '../../types'
 
 import { FC } from 'react'
 import { useRouter } from 'next/router'
@@ -7,7 +7,7 @@ import { PreviewContainer, DownloadBtnContainer } from './Containers'
 import DownloadButtonGroup from '../DownloadBtnGtoup'
 import { getStoredToken } from '../../utils/protectedRouteHandler'
 
-const ImagePreview: FC<{ file: OdFileObject }> = ({ file }) => {
+const ImagePreview: FC<{ file: FileObject }> = ({ file }) => {
   const { asPath } = useRouter()
   const hashedToken = getStoredToken(asPath)
 

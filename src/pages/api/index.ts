@@ -4,7 +4,7 @@ import Cors from 'cors'
 import apiConfig from '../../../config/api.config'
 import siteConfig from '../../../config/site.config'
 import { compareHashedToken } from '../../utils/authHandler'
-import { getFolderContents, getFileInfo, ensureStorageDir, readFileContent } from '../../utils/fileHandler'
+import { getFolderContents, getFileInfo, ensureStorageFolder, readFileContent } from '../../utils/fileHandler'
 import { HTTP, CACHE_CONTROL } from '../../utils/constants'
 import { handleApiError, createRequestError } from '../../utils/errorHandler'
 
@@ -22,9 +22,9 @@ function runCorsMiddleware(req: NextApiRequest, res: NextApiResponse) {
 const basePath = pathPosix.resolve('/', siteConfig.baseDirectory)
 
 /**
- * Encode the path of the file relative to the base directory
+ * Encode the path of the file relative to the base folder
  *
- * @param path Relative path of the file to the base directory
+ * @param path Relative path of the file to the base folder
  * @returns Path for local file access
  */
 export function encodePath(path: string): string {
@@ -65,7 +65,7 @@ export function getAuthTokenPath(path: string) {
  * - 2. Check if the od-protected-token header is present in the request
  * - The request is continued only if these two contents are exactly the same
  *
- * @param cleanPath Sanitised directory path, used for matching whether route is protected
+ * @param cleanPath Sanitised folder path, used for matching whether route is protected
  * @param odTokenHeader Protected token from request header
  */
 export async function checkAuthRoute(
@@ -107,8 +107,8 @@ export async function checkAuthRoute(
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Ensure storage directory exists
-    await ensureStorageDir()
+    // Ensure storage folder exists
+    await ensureStorageFolder()
 
     // If method is GET, then the API is a normal request for files or folders
     const { path = '/', raw = false, next = '', sort = '' } = req.query
@@ -175,22 +175,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return
     }
 
-    // Determine if it's a file or folder
+    // Process root path (or any path) - always check for folder first
     try {
-      // Try to get file info first
-      const fileInfo = await getFileInfo(requestPath)
-      // If no error, it's a file
-      res.status(HTTP.STATUS.OK).json({ file: fileInfo })
-    } catch (fileError: any) {
-      // If not a file, try to get folder contents
-      if (fileError.message === 'File not found' || fileError.message === 'Not a file') {
-        try {
-          const folderContents = await getFolderContents(requestPath)
-          res.status(HTTP.STATUS.OK).json({ folder: folderContents })
-        } catch (folderError: any) {
-          handleApiError(folderError, res, 'api/folder')
-        }
-      } else {
+      // First, try to get folder contents
+      const folderContents = await getFolderContents(requestPath)
+      res.status(HTTP.STATUS.OK).json({ folder: folderContents })
+    } catch (folderError: any) {
+      // If not a folder, try to get file information
+      try {
+        const fileInfo = await getFileInfo(requestPath)
+        res.status(HTTP.STATUS.OK).json({ file: fileInfo })
+      } catch (fileError: any) {
         handleApiError(fileError, res, 'api/file')
       }
     }
