@@ -37,7 +37,7 @@ cp .env.example .env.local
 
 Required environment variables:
 - `API_KEY`: API key to protect endpoints
-- `FILE_DIRECTORY`: File storage directory (default is './file_storage')
+- `FILE_DIRECTORY`: File storage directory (default is './data')
 
 4. Run the application in development mode:
 ```bash

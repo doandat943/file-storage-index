@@ -5,7 +5,7 @@ module.exports = {
   // Local file storage configuration
   storageConfig: {
     // Root directory for file storage (relative to project root)
-    fileDirectory: process.env.FILE_DIRECTORY || './file_storage'
+    fileDirectory: process.env.FILE_DIRECTORY || './data'
   },
 
   // Cache-Control header

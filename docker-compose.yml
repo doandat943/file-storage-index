@@ -13,6 +13,8 @@ services:
       - NODE_ENV=production
       # Add other environment variables if needed
     volumes:
-      []
-      # If you have a directory with files to store, uncomment the line below
-      # - /path/on/host:/path/in/container 
+      - file-storage-data:/app/data
+
+volumes:
+  file-storage-data:
+    # This creates a named volume that persists even when containers are removed 
