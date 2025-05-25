@@ -2,10 +2,6 @@
  * Website configuration including shared folder, title, fonts, icons, contact info, etc.
  */
 module.exports = {
-  // Identify the user when initializing the website for the first time
-  // You can set the 'NEXT_PUBLIC_USER_PRINCIPLE_NAME' environment variable on Vercel
-  userPrincipalName: process.env.NEXT_PUBLIC_USER_PRINCIPLE_NAME || 'doandat943@example.com',
-
   // [OPTIONAL] Website icon to the left of the title in the navigation bar
   // Place it in the /public directory and reference it with a relative path
   icon: '/icons/128.png',
@@ -30,13 +26,13 @@ module.exports = {
 
   // [OPTIONAL] Website footer component
   footer:
-    'Powered by File Storage Index. Made with ❤ by doandat943',
+  'Powered by <a href="https://github.com/spencerwooo/onedrive-vercel-index" target="_blank" rel="noopener noreferrer">File Storage Index</a>. Made with ❤ by doandat943',
 
   // [OPTIONAL] Password-protected paths
   protectedRoutes: ['/Private folder/protected', '/Test files/Protected route'],
 
   // [OPTIONAL] Email address displayed in the navigation bar (leave empty to hide)
-  email: 'mailto:doandat943@example.com',
+  email: 'mailto:doandat943@joverse.us',
 
   // [OPTIONAL] Array of names and links for social information
   links: [
