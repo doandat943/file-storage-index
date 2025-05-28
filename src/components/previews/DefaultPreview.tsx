@@ -37,11 +37,6 @@ const DefaultPreview: FC<{ file: FileObject }> = ({ file }) => {
               <div className="py-2 text-xs font-medium uppercase opacity-80">{t('MIME type')}</div>
               <div>{file.file?.mimeType ?? t('Unavailable')}</div>
             </div>
-
-            <div>
-              <div className="py-2 text-xs font-medium uppercase opacity-80">{t('File ID')}</div>
-              <div className="font-mono text-sm">{file.id}</div>
-            </div>
           </div>
         </div>
       </PreviewContainer>

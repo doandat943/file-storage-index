@@ -26,10 +26,10 @@ module.exports = {
 
   // [OPTIONAL] Website footer component
   footer:
-  'Powered by <a href="https://github.com/spencerwooo/onedrive-vercel-index" target="_blank" rel="noopener noreferrer">File Storage Index</a>. Made with ❤ by doandat943',
+  'Powered by <a href="https://github.com/doandat943/file-storage-index" target="_blank" rel="noopener noreferrer">File Storage Index</a>. Made with ❤ by doandat943',
 
   // [OPTIONAL] Password-protected paths
-  protectedRoutes: ['/Private folder/protected', '/Test files/Protected route'],
+  protectedRoutes: ['/private'],
 
   // [OPTIONAL] Email address displayed in the navigation bar (leave empty to hide)
   email: 'mailto:doandat943@joverse.us',
