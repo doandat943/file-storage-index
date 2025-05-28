@@ -2,17 +2,15 @@ name: Docker Build and Publish
 
 on:
   push:
-    branches: [ "**" ]  # Runs on push to any branch
-    # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
+    branches: [ "**" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "**" ]
+  workflow_dispatch:
 
 env:
-  # GitHub Container Registry
   GITHUB_REGISTRY: ghcr.io
-  # Docker Hub
   DOCKERHUB_REGISTRY: docker.io
+  
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
 
@@ -58,30 +56,17 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Extract metadata for Docker images
-      - name: Extract Docker metadata for GitHub Registry
-        id: meta-github
-        uses: docker/metadata-action@v5.0.0
-        with:
-          images: ${{ env.GITHUB_REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,format=short
-
-      - name: Extract Docker metadata for Docker Hub
-        id: meta-dockerhub
-        uses: docker/metadata-action@v5.0.0
-        with:
-          images: ${{ env.DOCKERHUB_REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,format=short
+      # Set tags based on branch
+      - name: Set Docker tags
+        id: docker-tags
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "GITHUB_TAGS=${{ env.GITHUB_REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${{ env.GITHUB_REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+            echo "DOCKERHUB_TAGS=${{ env.DOCKERHUB_REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${{ env.DOCKERHUB_REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          else
+            echo "GITHUB_TAGS=${{ env.GITHUB_REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+            echo "DOCKERHUB_TAGS=${{ env.DOCKERHUB_REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          fi
 
       # Build and push Docker image with Buildx
       - name: Build and push Docker image
@@ -90,8 +75,8 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta-github.outputs.tags }},${{ steps.meta-dockerhub.outputs.tags }}
-          labels: ${{ steps.meta-github.outputs.labels }}
+          tags: ${{ env.GITHUB_TAGS }},${{ env.DOCKERHUB_TAGS }}
+          labels: ${{ github.ref == 'refs/heads/main' && 'latest=true' || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -99,7 +84,12 @@ jobs:
       - name: Sign the published Docker image
         if: ${{ github.event_name != 'pull_request' }}
         env:
-          # Only sign the GitHub Container Registry images
-          TAGS: ${{ steps.meta-github.outputs.tags }}
+          # Only sign the images we've built
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
-        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST} 
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "${{ env.GITHUB_REGISTRY }}/${{ env.IMAGE_NAME }}:latest" | xargs -I {} cosign sign --yes {}@${DIGEST}
+            echo "${{ env.GITHUB_REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse --short HEAD)" | xargs -I {} cosign sign --yes {}@${DIGEST}
+          else
+            echo "${{ env.GITHUB_REGISTRY }}/${{ env.IMAGE_NAME }}:sha-$(git rev-parse --short HEAD)" | xargs -I {} cosign sign --yes {}@${DIGEST}
+          fi 

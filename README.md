@@ -1,7 +1,7 @@
 <div align="center">
   <img src="./public/header.png" alt="file-storage-index" />
   <h3><a href="https://github.com/doandat943/file-storage-index">file-storage-index</a></h3>
-  <p><a href="#quick-start">Get started</a> · <a href="#features">What's available</a> · <a href="#docker-deployment">Docker</a></p>
+  <p><a href="#quickstart-guide">Get started</a> · <a href="#features">What's available</a> · <a href="#docker-guide">Docker</a></p>
   <p><em>Local file storage directory listing, powered by Next.js and React</em></p>
 
   <img src="https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white" alt="Node.js" />
@@ -11,110 +11,24 @@
   <a href="https://github.com/doandat943/file-storage-index/discussions"><img src="https://img.shields.io/github/discussions/doandat943/file-storage-index?color=CF2B5B&labelColor=black&logo=github" alt="GitHub Discussions" /></a>
 </div>
 
-## TL;DR
+## 📖 Introduction
 
-Showcase, share, preview, and download files inside *your* local file system with file-storage-index -
+**file-storage-index** is a fork of [onedrive-vercel-index](https://github.com/spencerwooo/onedrive-vercel-index), reimagined for local file systems instead of Microsoft OneDrive cloud storage. This lightweight web application lets you browse, preview, and share files from your local storage with a modern, responsive interface.
 
-- Easy to set up and manage 💸
-- Super fast ⚡ and responsive 💦
-- Takes less than 15 minutes to setup ⏱️
-- Highly customisable ⚒️
-- Container ready with Docker 🐳
+- 🚀 **Simple deployment** with Docker or Node.js
+- 🔍 Built-in search and file preview capabilities
+- 🔒 Password protection at folder level
+- 📱 Modern responsive design for all devices
+- 🎬 Rich media support (video/audio streaming, office docs, PDFs)
+- 💯 Zero cloud dependencies - runs entirely on your machine
 
-🍌 More importantly, we are pretty (●'◡'●)
+Perfect for home media servers, personal file sharing, or any scenario where you need a beautiful interface to your local files.
 
-## About This Project
-
-This project is a local file storage index system that provides a web interface to browse, preview, and download files from your local file system. Inspired by various file index solutions, file-storage-index focuses on being lightweight, easy to deploy, and highly customizable.
-
-Key differences from similar projects:
-- 100% local focus - no cloud dependencies
-- Single container deployment with Docker
-- Password protection at folder level
-- Built-in file search capabilities
-- Modern responsive design
-
-## Demo
-
-Local demo screenshot:
+## 🎮 Demo
 
 ![demo](./public/demo.png)
 
-## Quick start
-
-### Local Installation
-
-1. Clone repository:
-```bash
-git clone https://github.com/doandat943/file-storage-index.git
-cd file-storage-index
-```
-
-2. Install dependencies:
-```bash
-pnpm install
-```
-
-3. Configuration:
-Copy `.env.example` file to `.env.local` and edit environment variables:
-```bash
-cp .env.example .env.local
-```
-
-Required environment variables:
-- `FILE_DIRECTORY`: File storage directory (default is './data')
-
-4. Run the application in development mode:
-```bash
-pnpm dev
-```
-
-### Docker Deployment
-
-1. Clone repository:
-```bash
-git clone https://github.com/doandat943/file-storage-index.git
-cd file-storage-index
-```
-
-2. Configure environment:
-```bash
-cp .env.example .env
-```
-Edit `.env` file to set up your environment variables.
-
-3. Build and run with Docker Compose:
-```bash
-docker-compose up --build -d
-```
-
-The application will be available at http://localhost:3000.
-
-4. Use pre-built Docker image (alternative to steps 1-3):
-```bash
-# Create a docker-compose.yml file
-cat > docker-compose.yml << 'EOF'
-version: '3'
-
-services:
-  app:
-    container_name: file-storage-index
-    image: ghcr.io/doandat943/file-storage-index:main
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./data:/app/data  # Mount your local data directory
-      - ./config:/app/config  # Optional: Mount config directory if you want to customize
-    environment:
-      - FILE_DIRECTORY=./data  # Can be changed to a different directory inside container
-EOF
-
-# Run the container
-docker-compose up -d
-```
-
-## Features
+## ✨ Features
 
 <table>
   <tbody>
@@ -184,7 +98,152 @@ docker-compose up -d
 
 > **Note**: This project is focused on showcasing and providing a way for others to download files from your local file system. Emphasis on **simple setup** and **easy customization**.
 
-## Configuration
+## 🚀 Quickstart Guide
+
+### Local Installation
+
+1. Clone repository:
+```bash
+git clone https://github.com/doandat943/file-storage-index.git
+cd file-storage-index
+```
+
+2. Install dependencies:
+```bash
+pnpm install
+```
+
+3. Configuration:
+Copy `.env.example` file to `.env` and edit environment variables:
+```bash
+cp .env.example .env
+```
+
+Required environment variables:
+- `STORAGE_ROOT`: File storage directory (default is './data')
+
+4. Run the application in development mode:
+```bash
+pnpm dev
+```
+
+## 🐳 Docker Guide
+
+This section covers all aspects of using file-storage-index with Docker.
+
+### Building from Source
+
+If you prefer to build the Docker image from source:
+
+1. Clone repository:
+```bash
+git clone https://github.com/doandat943/file-storage-index.git
+cd file-storage-index
+```
+
+2. Configure environment:
+```bash
+cp .env.example .env
+```
+Edit `.env` file to set up your environment variables.
+
+3. Build and run with Docker Compose:
+```bash
+docker-compose up --build -d
+```
+
+### Quick Deployment
+
+The fastest way to get started with these images:
+
+1. Create a `docker-compose.yml` file with the following content:
+
+```yaml
+version: '3'
+
+services:
+  file-storage-index:
+    image: doandat943/file-storage-index:main
+    container_name: file-storage-index
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - file-storage-data:/app/data
+    ports:
+      - "3000:3000"
+
+volumes:
+  file-storage-data:
+```
+
+2. Run the container:
+```bash
+docker-compose up -d
+```
+
+The application will be available at http://localhost:3000.
+
+### Updating Docker Containers
+
+To update your container to the latest image version:
+
+1. Pull the latest image:
+```bash
+docker pull doandat943/file-storage-index:main
+```
+
+2. Stop and remove the current container (your data will be preserved):
+```bash
+docker-compose down
+```
+
+3. Start the container with the new image:
+```bash
+docker-compose up -d
+```
+
+4. Verify that the new container is running:
+```bash
+docker ps
+```
+
+Note: Your data will remain intact as long as you've properly configured volumes in your docker-compose.yml file.
+
+### Common Docker Commands
+
+Here are the most frequently used commands for managing your container:
+
+```bash
+# View logs
+docker logs file-storage-index
+
+# Stop container
+docker-compose stop
+
+# Start container
+docker-compose start
+
+# Remove container (preserves data volume)
+docker-compose down
+
+# Access container shell
+docker exec -it file-storage-index /bin/sh
+```
+
+### CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration and deployment:
+
+- Every commit triggers automatic builds and pushes to GitHub Container Registry and Docker Hub
+- The workflow file `.github/workflows/docker-publish.yml` handles building, pushing, and signing images
+- Images are signed with Cosign for security verification
+
+If you fork this project and want to use the CI/CD pipeline, set up these repository secrets:
+- `DOCKERHUB_USERNAME`: Your Docker Hub username
+- `DOCKERHUB_TOKEN`: Your Docker Hub access token
+
+## ⚙️ Configuration Options
 
 ### Storage Configuration
 
@@ -200,9 +259,16 @@ Edit `config/site.config.js` to set up:
 - Password-protected paths
 - Contact information and social links
 
-## API Endpoints
+### Folder Protection
 
-### Files and Folders
+To protect a folder with a password:
+
+1. Create a `.password` file in the folder you want to protect
+2. Add the folder path to `protectedRoutes` in `config/site.config.js`
+
+## 🔌 API Reference
+
+### Available Endpoints
 
 - `GET /api?path={path}`: Get file or folder information
 - `GET /api/item?id={id}`: Get item information by ID
@@ -210,126 +276,11 @@ Edit `config/site.config.js` to set up:
 - `GET /api/search?q={query}`: Search for files and folders
 - `GET /api/thumbnail?path={path}`: Get file thumbnail
 
-## Security
-
-### Folder Protection
-
-To protect a folder with a password, create a `.password` file in that folder and add the folder path to `protectedRoutes` in `config/site.config.js`.
-
-## Docker Commands
-
-View logs:
-```bash
-docker logs file-storage-index
-```
-
-Stop container:
-```bash
-docker-compose stop
-```
-
-Start container:
-```bash
-docker-compose start
-```
-
-Remove container (preserves data volume):
-```bash
-docker-compose down
-```
-
-Access container shell:
-```bash
-docker exec -it file-storage-index /bin/sh
-```
-
-## CI/CD and Container Registry
-
-This project uses GitHub Actions for continuous integration and deployment. Every commit triggers an automatic build and push of Docker images to both GitHub Container Registry and Docker Hub.
-
-### GitHub Actions Workflow
-
-The workflow file `.github/workflows/docker-publish.yml` handles:
-
-1. Building Docker images on every commit
-2. Pushing to both GitHub Container Registry and Docker Hub
-3. Signing images with Cosign for security verification
-4. Tagging images based on branch name and version
-
-To use this workflow in your fork:
-
-1. Set up repository secrets:
-   - `DOCKER_USERNAME`: Your Docker Hub username
-   - `DOCKER_PASSWORD`: Your Docker Hub access token
-   - `COSIGN_PRIVATE_KEY`: Your Cosign private key
-   - `COSIGN_PASSWORD`: Your Cosign password
-
-2. Update the image names in the workflow file to match your username:
-   ```yaml
-   # Example
-   images: |
-     ghcr.io/${{ github.repository_owner }}/file-storage-index
-     yourusername/file-storage-index
-   ```
-
-### Available Docker Images
-
-You can pull ready-to-use Docker images from:
-
-1. **GitHub Container Registry**:
-```bash
-docker pull ghcr.io/doandat943/file-storage-index:main
-```
-
-2. **Docker Hub**:
-```bash
-docker pull doandat943/file-storage-index:main
-```
-
-### Container Tags
-
-- `main`: Latest build from the main branch
-- `vX.Y.Z` (e.g., `v1.0.0`): Release versions
-- `sha-********`: Specific commit builds
-
-### Security
-
-All images pushed to GitHub Container Registry are signed with Cosign for enhanced supply chain security. This ensures the images you pull are authentic and haven't been tampered with.
-
-## Data Management
-
-The application uses volumes to maintain data persistence across container restarts and updates. Two main volumes are used:
-
-### 1. File Storage Volume
-
-This volume maps to the `/app/data` directory in the container (default location configured in `FILE_DIRECTORY` environment variable). All files you want to serve through the application should be placed in this directory.
-
-```yaml
-volumes:
-  - ./data:/app/data  # Maps local ./data to container's /app/data
-```
-
-### 2. Configuration Volume
-
-This optional volume maps your local configuration directory to the container, allowing customization of:
-- API settings (`config/api.config.js`)
-- Site settings (`config/site.config.js`) 
-- Preview handlers (`config/preview.config.js`)
-
-```yaml
-volumes:
-  - ./config:/app/config  # Maps local ./config to container's /app/config
-```
-
-### Data Backup
-
-To backup your data, simply copy the contents of your `./data` directory. When upgrading to a newer version of the application, your data remains intact as long as you maintain the same volume mappings.
-
-## License
+## 📄 License
 
 MIT
 
-## Author
+## 👨‍💻 Author
 
 Created and maintained by [doandat943](https://github.com/doandat943)
 

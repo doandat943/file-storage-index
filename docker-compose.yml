@@ -6,15 +6,13 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: file-storage-index
-    restart: always
-    ports:
-      - "3000:3000"
+    restart: unless-stopped
     environment:
       - NODE_ENV=production
-      # Add other environment variables if needed
     volumes:
       - file-storage-data:/app/data
+    ports:
+      - "3000:3000"
 
 volumes:
   file-storage-data:
-    # This creates a named volume that persists even when containers are removed 

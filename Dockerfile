@@ -8,8 +8,7 @@ RUN npm install -g pnpm
 FROM base AS deps
 WORKDIR /app
 
-# Copy package.json and pnpm-lock.yaml (if exists)
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 RUN pnpm install
 
 # Build the application
@@ -23,7 +22,7 @@ RUN pnpm build
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
 # Create non-root user for better security
 RUN addgroup --system --gid 1001 nodejs
