@@ -9,7 +9,7 @@ import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next'
 
-import useLocalStorage from '../utils/useLocalStorage'
+import useCookieStorage from '../utils/useCookieStorage'
 import { getPreviewType, preview } from '../utils/getPreviewType'
 import { useProtectedSWRInfinite } from '../utils/fetchWithSWR'
 import { getExtension, getRawExtension, getFileIcon } from '../utils/getFileIcon'
@@ -156,7 +156,7 @@ const FileListing: FC<{ query?: ParsedUrlQuery }> = ({ query }) => {
 
   const router = useRouter()
   const hashedToken = getStoredToken(router.asPath)
-  const [layout, _] = useLocalStorage('preferredLayout', layouts[0])
+  const [layout, _] = useCookieStorage('preferredLayout', layouts[0])
 
   const { t } = useTranslation()
 

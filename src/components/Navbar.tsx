@@ -96,23 +96,20 @@ const Navbar = () => {
                 href={l.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center space-x-2 hover:opacity-80 dark:text-white"
+                className="flex items-center hover:opacity-80 dark:text-white"
+                title={l.name}
               >
                 <FontAwesomeIcon icon={['fab', l.name.toLowerCase() as IconName]} />
-                <span className="hidden text-sm font-medium md:inline-block">
-                  {
-                    // Append link name comments here to add translations
-                    // t('Weibo')
-                    t(l.name)
-                  }
-                </span>
               </a>
             ))}
 
           {siteConfig.email && (
-            <a href={siteConfig.email} className="flex items-center space-x-2 hover:opacity-80 dark:text-white">
+            <a 
+              href={siteConfig.email} 
+              className="flex items-center hover:opacity-80 dark:text-white"
+              title={t('Email')}
+            >
               <FontAwesomeIcon icon={['far', 'envelope']} />
-              <span className="hidden text-sm font-medium md:inline-block">{t('Email')}</span>
             </a>
           )}
 

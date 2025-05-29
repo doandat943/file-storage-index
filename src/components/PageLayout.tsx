@@ -1,17 +1,18 @@
 import Head from 'next/head'
-import { useRouter } from 'next/router'
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
+import { ReactNode } from 'react'
 
 import siteConfig from '../../config/site.config'
-import Navbar from '../components/Navbar'
-import FileListing from '../components/FileListing'
-import Footer from '../components/Footer'
-import Breadcrumb from '../components/Breadcrumb'
-import SwitchLayout from '../components/SwitchLayout'
+import Navbar from './Navbar'
+import Footer from './Footer'
+import Breadcrumb from './Breadcrumb'
+import SwitchLayout from './SwitchLayout'
 
-export default function Folders() {
-  const { query } = useRouter()
+interface PageLayoutProps {
+  children: ReactNode
+  query?: any
+}
 
+const PageLayout = ({ children, query }: PageLayoutProps) => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-white dark:bg-gray-900">
       <Head>
@@ -25,7 +26,7 @@ export default function Folders() {
             <Breadcrumb query={query} />
             <SwitchLayout />
           </nav>
-          <FileListing query={query} />
+          {children}
         </div>
       </main>
 
@@ -34,10 +35,4 @@ export default function Folders() {
   )
 }
 
-export async function getServerSideProps({ locale }) {
-  return {
-    props: {
-      ...(await serverSideTranslations(locale, ['common'])),
-    },
-  }
-}
+export default PageLayout 

@@ -6,14 +6,14 @@ import { FC, useState } from 'react'
 import { useTranslation } from 'next-i18next'
 
 import { matchProtectedRoute } from '../utils/protectedRouteHandler'
-import useLocalStorage from '../utils/useLocalStorage'
+import useCookieStorage from '../utils/useCookieStorage'
 
 const Auth: FC<{ redirect: string }> = ({ redirect }) => {
   const authTokenPath = matchProtectedRoute(redirect)
 
   const router = useRouter()
   const [token, setToken] = useState('')
-  const [_, setPersistedToken] = useLocalStorage(authTokenPath, '')
+  const [_, setPersistedToken] = useCookieStorage(authTokenPath, '')
 
   const { t } = useTranslation()
 

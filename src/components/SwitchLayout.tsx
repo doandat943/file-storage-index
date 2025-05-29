@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Listbox, Transition } from '@headlessui/react'
 import { useTranslation } from 'next-i18next'
 
-import useLocalStorage from '../utils/useLocalStorage'
+import useCookieStorage from '../utils/useCookieStorage'
 
 export const layouts: Array<{ id: number; name: 'Grid' | 'List'; icon: IconProp }> = [
   { id: 1, name: 'List', icon: 'th-list' },
@@ -12,7 +12,7 @@ export const layouts: Array<{ id: number; name: 'Grid' | 'List'; icon: IconProp 
 ]
 
 const SwitchLayout = () => {
-  const [preferredLayout, setPreferredLayout] = useLocalStorage('preferredLayout', layouts[0])
+  const [preferredLayout, setPreferredLayout] = useCookieStorage('preferredLayout', layouts[0])
 
   const { t } = useTranslation()
 
