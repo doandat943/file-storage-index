@@ -1,4 +1,5 @@
 onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
   - canvas
   - core-js
   - es5-ext
