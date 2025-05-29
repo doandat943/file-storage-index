@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconName } from '@fortawesome/fontawesome-svg-core'
-import { Dialog, Transition } from '@headlessui/react'
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Transition } from '@headlessui/react'
 import toast, { Toaster } from 'react-hot-toast'
 import { useHotkeys } from 'react-hotkeys-hook'
 
@@ -140,7 +140,7 @@ const Navbar = () => {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <Dialog.Overlay className="fixed inset-0 bg-gray-50 dark:bg-gray-800" />
+              <DialogBackdrop className="fixed inset-0 bg-gray-50 dark:bg-gray-800" />
             </Transition.Child>
 
             {/* This element is to trick the browser into centering the modal contents. */}
@@ -156,10 +156,10 @@ const Navbar = () => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <div className="my-8 inline-block w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle transition-all dark:bg-gray-900">
-                <Dialog.Title className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              <DialogPanel className="my-8 inline-block w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle transition-all dark:bg-gray-900">
+                <DialogTitle className="text-lg font-bold text-gray-900 dark:text-gray-100">
                   {t('Clear all tokens?')}
-                </Dialog.Title>
+                </DialogTitle>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
                     {t('These tokens are used to authenticate yourself into password protected folders, ') +
@@ -191,7 +191,7 @@ const Navbar = () => {
                     <span>{t('Clear all')}</span>
                   </button>
                 </div>
-              </div>
+              </DialogPanel>
             </Transition.Child>
           </div>
         </Dialog>
