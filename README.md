@@ -163,7 +163,7 @@ version: '3'
 
 services:
   file-storage-index:
-    image: doandat943/file-storage-index:main
+    image: doandat943/file-storage-index:latest
     container_name: file-storage-index
     restart: unless-stopped
     environment:
@@ -190,7 +190,7 @@ To update your container to the latest image version:
 
 1. Pull the latest image:
 ```bash
-docker pull doandat943/file-storage-index:main
+docker pull doandat943/file-storage-index:latest
 ```
 
 2. Stop and remove the current container (your data will be preserved):

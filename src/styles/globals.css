@@ -14,10 +14,6 @@
   }
 }
 
-.react-pdf__Page__canvas {
-  @apply mx-auto border border-gray-300/40 shadow;
-}
-
 .markdown-body ul {
   @apply list-disc;
 }

@@ -1,4 +1,5 @@
 onlyBuiltDependencies:
+  - canvas
   - core-js
   - es5-ext
   - esbuild
