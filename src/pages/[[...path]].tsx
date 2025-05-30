@@ -15,7 +15,7 @@ export default function Pages() {
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const locale = context.req.cookies.locale || 'en'
+  const locale = context.req.cookies.locale || 'en-US'
   
   return {
     props: {

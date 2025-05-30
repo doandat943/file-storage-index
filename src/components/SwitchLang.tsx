@@ -3,28 +3,28 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Menu, MenuButton, MenuItems, MenuItem, Transition } from '@headlessui/react'
 import { useLanguage } from '../utils/useLanguage'
 
-const locales = ['de-DE', 'en', 'es', 'zh-CN', 'hi', 'id', 'tr-TR', 'zh-TW']
+const locales = ['de-DE', 'en-US', 'es-ES', 'zh-CN', 'hi-IN', 'id-ID', 'tr-TR', 'zh-TW']
 
 const localeText = (locale: string): string => {
   switch (locale) {
     case 'de-DE':
       return '🇩🇪 Deutsch'
-    case 'en':
-      return '🇬🇧 English'
-    case 'es':
+    case 'en-US':
+      return '🇺🇸 English'
+    case 'es-ES':
       return '🇪🇸 Español'
     case 'zh-CN':
       return '🇨🇳 简体中文'
-    case 'hi':
+    case 'hi-IN':
       return '🇮🇳 हिन्दी'
-    case 'id':
+    case 'id-ID':
       return '🇮🇩 Indonesia'
     case 'tr-TR':
       return '🇹🇷 Türkçe'
     case 'zh-TW':
       return '🇹🇼 繁體中文'
     default:
-      return '🇬🇧 English'
+      return '🇺🇸 English'
   }
 }
 

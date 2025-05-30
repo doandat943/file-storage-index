@@ -4,7 +4,7 @@ import useCookieStorage from './useCookieStorage'
 
 export const useLanguage = () => {
   const { i18n } = useTranslation()
-  const [currentLocale, setCurrentLocale] = useCookieStorage('locale', 'en')
+  const [currentLocale, setCurrentLocale] = useCookieStorage('locale', 'en-US')
   const [isChanging, setIsChanging] = useState(false)
 
   // Sync with i18n if needed (only when locale is different)

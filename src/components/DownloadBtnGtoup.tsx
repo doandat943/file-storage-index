@@ -95,7 +95,7 @@ const DownloadButtonGroup = () => {
         <DownloadButton
           onClickCallback={() => setMenuOpen(true)}
           btnColor="teal"
-          btnText={t('Customise link')}
+          btnText={t('Customize link')}
           btnIcon="pen"
         />
       </div>

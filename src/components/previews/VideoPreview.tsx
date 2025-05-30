@@ -251,7 +251,7 @@ const VideoPreview: FC<{ file: FileObject }> = ({ file }) => {
           <DownloadButton
             onClickCallback={() => setMenuOpen(true)}
             btnColor="teal"
-            btnText={t('Customise link')}
+            btnText={t('Customize link')}
             btnIcon="pen"
           />
 
