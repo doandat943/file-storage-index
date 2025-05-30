@@ -116,5 +116,9 @@
   "Welcome to your new onedrive-vercel-index 🎉": "Onedrive-vercel-index'inize hoş geldiniz 🎉",
   "What is this?": "Bu Nedir?",
   "Where is the auth code? Did you follow step 2 you silly donut?": "Yetkilendirme kodu nerede? 2. adımı izledin mi seni Aptal ?",
-  "Whoops, looks like we got a problem: {{error}}.": "Hata! Bir sorunumuz var gibi görünüyor: {{error}}."
+  "Whoops, looks like we got a problem: {{error}}.": "Hata! Bir sorunumuz var gibi görünüyor: {{error}}.",
+  "Theme": "Tema",
+  "Light": "Açık",
+  "Dark": "Koyu",
+  "System": "Sistem"
 }

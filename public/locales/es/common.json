@@ -118,5 +118,9 @@
   "Welcome to your new onedrive-vercel-index 🎉": "Bienvenido a tu nuevo onedrive-vercel-index 🎉",
   "What is this?": "¿Qué es esto?",
   "Where is the auth code? Did you follow step 2 you silly donut?": "¿Dónde está el código de autorización? ¿Siguiste el paso 2, bobo?",
-  "Whoops, looks like we got a problem: {{error}}.": "¡Vaya, parece que tenemos un problema: {{error}}."
+  "Whoops, looks like we got a problem: {{error}}.": "¡Vaya, parece que tenemos un problema: {{error}}.",
+  "Theme": "Tema",
+  "Light": "Claro",
+  "Dark": "Oscuro",
+  "System": "Sistema"
 }

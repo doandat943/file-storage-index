@@ -13,6 +13,7 @@ import { useTranslation } from 'next-i18next'
 import siteConfig from '../../config/site.config'
 import SearchModal from './SearchModal'
 import SwitchLang from './SwitchLang'
+import ThemeToggle from './ThemeToggle'
 import useDeviceOS from '../utils/useDeviceOS'
 
 const Navbar = () => {
@@ -88,6 +89,7 @@ const Navbar = () => {
           </button>
 
           <SwitchLang />
+          <ThemeToggle />
 
           {siteConfig.links.length !== 0 &&
             siteConfig.links.map((l: { name: string; link: string }) => (

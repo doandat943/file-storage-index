@@ -60,6 +60,9 @@ import {
   faHome,
   faLanguage,
   faCircleNotch,
+  faSun,
+  faMoon,
+  faDesktop,
 } from '@fortawesome/free-solid-svg-icons'
 import * as Icons from '@fortawesome/free-brands-svg-icons'
 
@@ -120,6 +123,9 @@ library.add(
   faLanguage,
   faPen,
   faCircleNotch,
+  faSun,
+  faMoon,
+  faDesktop,
   ...iconList
 )
 

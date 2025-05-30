@@ -1,6 +1,5 @@
 import { FC } from 'react'
 import { useTranslation } from 'next-i18next'
-import useSystemTheme from 'react-use-system-theme'
 import { useRouter } from 'next/router'
 
 import { LightAsync as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -8,6 +7,7 @@ import { tomorrowNightEighties, tomorrow } from 'react-syntax-highlighter/dist/c
 
 import useFileContent from '../../utils/fetchOnMount'
 import { getLanguageByFileName } from '../../utils/getPreviewType'
+import { useTheme } from '../../utils/useTheme'
 import FourOhFour from '../FourOhFour'
 import Loading from '../Loading'
 import DownloadButtonGroup from '../DownloadBtnGtoup'
@@ -17,7 +17,7 @@ const CodePreview: FC<{ file: any }> = ({ file }) => {
   const { asPath } = useRouter()
   const { response: content, error, validating } = useFileContent(`/api/raw/?path=${asPath}`, asPath)
 
-  const theme = useSystemTheme('dark')
+  const { resolvedTheme } = useTheme()
   const { t } = useTranslation()
 
   if (error) {
@@ -45,7 +45,7 @@ const CodePreview: FC<{ file: any }> = ({ file }) => {
       <PreviewContainer>
         <SyntaxHighlighter
           language={getLanguageByFileName(file.name)}
-          style={theme === 'dark' ? tomorrowNightEighties : tomorrow}
+          style={resolvedTheme === 'dark' ? tomorrowNightEighties : tomorrow}
         >
           {content}
         </SyntaxHighlighter>
