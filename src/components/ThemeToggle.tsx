@@ -38,7 +38,7 @@ const ThemeToggle = () => {
         {({ open }) => (
           <>
             <MenuButton 
-              className={`flex items-center space-x-2 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-200 hover:shadow-sm focus:outline-none dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 ${
+              className={`flex h-8 items-center space-x-2 rounded-lg bg-gray-100 px-2 py-1.5 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-200 hover:shadow-sm focus:outline-none dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 md:px-2.5 ${
                 isChanging ? 'opacity-75 cursor-wait' : ''
               }`}
               disabled={isChanging}

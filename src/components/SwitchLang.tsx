@@ -1,33 +1,72 @@
-import { Fragment } from 'react'
+import React, { Fragment } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Menu, MenuButton, MenuItems, MenuItem, Transition } from '@headlessui/react'
 import { useLanguage } from '../utils/useLanguage'
+import 'flag-icons/css/flag-icons.min.css'
 
 const locales = ['de-DE', 'en-US', 'es-ES', 'zh-CN', 'hi-IN', 'id-ID', 'tr-TR', 'vi-VN', 'zh-TW']
 
-const localeText = (locale: string): string => {
-  switch (locale) {
-    case 'de-DE':
-      return '🇩🇪 Deutsch'
-    case 'en-US':
-      return '🇺🇸 English'
-    case 'es-ES':
-      return '🇪🇸 Español'
-    case 'zh-CN':
-      return '🇨🇳 简体中文'
-    case 'hi-IN':
-      return '🇮🇳 हिन्दी'
-    case 'id-ID':
-      return '🇮🇩 Indonesia'
-    case 'tr-TR':
-      return '🇹🇷 Türkçe'
-    case 'vi-VN':
-      return '🇻🇳 Tiếng Việt'
-    case 'zh-TW':
-      return '🇹🇼 繁體中文'
-    default:
-      return '🇺🇸 English'
+const localeFlag = (locale: string): React.ReactElement => {
+  const getCountryCode = (locale: string): string => {
+    switch (locale) {
+      case 'de-DE':
+        return 'de'
+      case 'en-US':
+        return 'us'
+      case 'es-ES':
+        return 'es'
+      case 'zh-CN':
+        return 'cn'
+      case 'hi-IN':
+        return 'in'
+      case 'id-ID':
+        return 'id'
+      case 'tr-TR':
+        return 'tr'
+      case 'vi-VN':
+        return 'vn'
+      case 'zh-TW':
+        return 'tw'
+      default:
+        return 'us'
+    }
   }
+  
+  return <span className={`fi fi-${getCountryCode(locale)} w-5 h-4 inline-block rounded-sm`}></span>
+}
+
+const localeText = (locale: string): React.ReactElement => {
+  const getText = (locale: string): string => {
+    switch (locale) {
+      case 'de-DE':
+        return 'Deutsch'
+      case 'en-US':
+        return 'English'
+      case 'es-ES':
+        return 'Español'
+      case 'zh-CN':
+        return '简体中文'
+      case 'hi-IN':
+        return 'हिन्दी'
+      case 'id-ID':
+        return 'Indonesia'
+      case 'tr-TR':
+        return 'Türkçe'
+      case 'vi-VN':
+        return 'Tiếng Việt'
+      case 'zh-TW':
+        return '繁體中文'
+      default:
+        return 'English'
+    }
+  }
+  
+  return (
+    <span className="flex items-center space-x-2">
+      {localeFlag(locale)}
+      <span>{getText(locale)}</span>
+    </span>
+  )
 }
 
 const SwitchLang = () => {
@@ -39,13 +78,13 @@ const SwitchLang = () => {
         {({ open }) => (
           <>
             <MenuButton 
-              className={`flex items-center space-x-2 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-200 hover:shadow-sm focus:outline-none dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 ${
+              className={`flex h-8 items-center space-x-2 rounded-lg bg-gray-100 px-2 py-1.5 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-200 hover:shadow-sm focus:outline-none dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 md:px-2.5 ${
                 isChanging ? 'opacity-75 cursor-wait' : ''
               }`}
               disabled={isChanging}
             >
               <span className="select-none">
-                {localeText(currentLocale)}
+                {localeFlag(currentLocale)}
               </span>
               <FontAwesomeIcon 
                 className={`h-3 w-3 opacity-60 transition-transform duration-200 ${
