@@ -6,11 +6,12 @@ import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
 import { useTranslation } from 'next-i18next'
 import { LightAsync as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { tomorrowNight } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
+import { tomorrowNight, tomorrow } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
 
 import 'katex/dist/katex.min.css'
 
 import useFileContent from '../../utils/fetchOnMount'
+import { useTheme } from '../../utils/useTheme'
 import FourOhFour from '../FourOhFour'
 import Loading from '../Loading'
 import DownloadButtonGroup from '../DownloadBtnGtoup'
@@ -25,6 +26,7 @@ const MarkdownPreview: FC<{
   const parentPath = standalone ? path.substring(0, path.lastIndexOf('/')) : path
 
   const { response: content, error, validating } = useFileContent(`/api/raw/?path=${parentPath}/${file.name}`, path)
+  const { resolvedTheme } = useTheme()
   const { t } = useTranslation()
 
   // Check if the image is relative path instead of a absolute url
@@ -58,7 +60,7 @@ const MarkdownPreview: FC<{
   return (
     <div>
       <PreviewContainer>
-        <div className="markdown-body">
+        <div className={`markdown-body ${resolvedTheme === 'dark' ? 'dark-theme' : ''}`}>
           {/* Using rehypeRaw to render HTML inside Markdown is potentially dangerous, use under safe environments. (#18) */}
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath]}
@@ -88,7 +90,7 @@ const MarkdownPreview: FC<{
                 return (
                   <SyntaxHighlighter 
                     language={match[1]} 
-                    style={tomorrowNight} 
+                    style={resolvedTheme === 'dark' ? tomorrowNight : tomorrow}
                     PreTag="div"
                   >
                     {String(children).replace(/\n$/, '')}

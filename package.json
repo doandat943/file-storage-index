@@ -50,7 +50,6 @@
     "react-markdown": "^10.1.0",
     "react-reader": "^2.0.0",
     "react-syntax-highlighter": "^15.5.0",
-    "react-use-system-theme": "^1.1.1",
     "rehype-katex": "^7.0.0",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.0",
