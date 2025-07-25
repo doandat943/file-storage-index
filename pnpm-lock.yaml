@@ -25,7 +25,7 @@ importers:
         version: 0.2.2(@fortawesome/fontawesome-svg-core@6.7.2)(react@19.1.0)
       '@headlessui/react':
         specifier: ^2.0.0
-        version: 2.2.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 2.2.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@tailwindcss/line-clamp':
         specifier: ^0.4.2
         version: 0.4.4(tailwindcss@4.1.11)
@@ -478,8 +478,8 @@ packages:
     resolution: {integrity: sha512-kjotm7XJrJ6v+7knhPaRgaT6q8F8K2jiafwYdNHLzmV0uGLuZY43FK6smNSHUPrhq5kX2slCUy+RGG/xGqmIKA==}
     engines: {node: '>=10.13.0'}
 
-  '@headlessui/react@2.2.5':
-    resolution: {integrity: sha512-h1+2Vu1yR5pp/fBcTnwVEW8Kb94Hbxp7MXZLORfDzvSrbmGgiTyaTZ4LI/tPNZnK8eDrYD9s9cMbjm5HS5otIQ==}
+  '@headlessui/react@2.2.6':
+    resolution: {integrity: sha512-gN5CT8Kf4IWwL04GQOjZ/ZnHMFoeFHZmVSFoDKeTmbtmy9oFqQqJMthdBiO3Pl5LXk2w03fGFLpQV6EW84vjjQ==}
     engines: {node: '>=10'}
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
@@ -3864,7 +3864,7 @@ snapshots:
     dependencies:
       is-negated-glob: 1.0.0
 
-  '@headlessui/react@2.2.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@headlessui/react@2.2.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@floating-ui/react': 0.26.28(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@react-aria/focus': 3.21.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
