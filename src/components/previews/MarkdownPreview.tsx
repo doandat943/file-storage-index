@@ -6,7 +6,8 @@ import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
 import { useTranslation } from 'next-i18next'
 import { LightAsync as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { tomorrowNight } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
+import { tomorrowNight as darkStyle } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
+import { github as lightStyle } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
 
 import 'katex/dist/katex.min.css'
 
@@ -15,12 +16,14 @@ import FourOhFour from '../FourOhFour'
 import Loading from '../Loading'
 import DownloadButtonGroup from '../DownloadBtnGtoup'
 import { DownloadBtnContainer, PreviewContainer } from './Containers'
+import { useTheme } from '../../utils/useTheme'
 
 const MarkdownPreview: FC<{
   file: any
   path: string
   standalone?: boolean
 }> = ({ file, path, standalone = true }) => {
+  const { resolvedTheme } = useTheme()
   // The parent folder of the markdown file, which is also the relative image folder
   const parentPath = standalone ? path.substring(0, path.lastIndexOf('/')) : path
 
@@ -58,7 +61,7 @@ const MarkdownPreview: FC<{
   return (
     <div>
       <PreviewContainer>
-        <div className="markdown-body">
+        <div className={`markdown-body ${resolvedTheme}`}>
           {/* Using rehypeRaw to render HTML inside Markdown is potentially dangerous, use under safe environments. (#18) */}
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath]}
@@ -88,7 +91,7 @@ const MarkdownPreview: FC<{
                 return (
                   <SyntaxHighlighter 
                     language={match[1]} 
-                    style={tomorrowNight} 
+                    style={resolvedTheme === 'dark' ? darkStyle : lightStyle} 
                     PreTag="div"
                   >
                     {String(children).replace(/\n$/, '')}
