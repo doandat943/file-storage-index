@@ -73,7 +73,7 @@ importers:
         version: 1.8.0
       music-metadata:
         specifier: ^11.2.3
-        version: 11.7.3
+        version: 11.8.0
       next:
         specifier: ^15.0.0
         version: 15.4.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -651,6 +651,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
+
+  '@kayahr/text-encoding@2.0.1':
+    resolution: {integrity: sha512-OUsJJVn85VrfNiiT6CSbHK2Jr9YS6tVsgQhly+EkcbYTT2SXeibU4nQNO2IzCRttKJt4zw4W60KtLifRRJBIng==}
 
   '@napi-rs/wasm-runtime@0.2.10':
     resolution: {integrity: sha512-bCsCyeZEwVErsGmyPNSzwfwFn4OdxBj0mmv6hOFucB/k81Ojdu68RbZdxYsRQUPc9l6SU5F/cG+bXgWs3oUgsQ==}
@@ -2672,8 +2675,8 @@ packages:
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
-  music-metadata@11.7.3:
-    resolution: {integrity: sha512-xYbaSFpHi6qOUTFCb7fvC4/6Uk1NAJey2pSwNQPqJkCLwleYGUWVRKlxnNy2MsTaDRPnIwXdkgrmeiP/GDq/ww==}
+  music-metadata@11.8.0:
+    resolution: {integrity: sha512-7ecDySlxcNdsXQVg6FOO2fI1gwYNM0s3SoLjlxwkNULKgFTMvhOHIWtF6pTJmGGOYht3WOczzXDhfMoRmzEZHA==}
     engines: {node: '>=18'}
 
   nanoid@3.3.11:
@@ -3424,8 +3427,8 @@ packages:
   toggle-selection@1.0.6:
     resolution: {integrity: sha512-BiZS+C1OS8g/q2RRbJmy59xpyghNBqrr6k5L/uKBGRsTfxmu3ffiRnd8mlGPUVayg8pvfi5urfnu8TU7DVOkLQ==}
 
-  token-types@6.0.4:
-    resolution: {integrity: sha512-MD9MjpVNhVyH4fyd5rKphjvt/1qj+PtQUz65aFqAZA6XniWAuSFRjLk3e2VALEFlh9OwBpXUN7rfeqSnT/Fmkw==}
+  token-types@6.1.0:
+    resolution: {integrity: sha512-IwovPojr3nD6KBpwSdWq7zL4D9xDLMSqZm/mFweaFFXiS7mtD1qea2WKcth6lyErwZZjsavZk4AnwPJzT9/wVA==}
     engines: {node: '>=14.16'}
 
   trim-lines@3.0.1:
@@ -3474,8 +3477,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  uint8array-extras@1.4.0:
-    resolution: {integrity: sha512-ZPtzy0hu4cZjv3z5NW9gfKnNLjoz4y6uv4HlelAjDK7sY/xOkKZv9xK/WQpcsBB3jEybChz9DPC2U/+cusjJVQ==}
+  uint8array-extras@1.4.1:
+    resolution: {integrity: sha512-+NWHrac9dvilNgme+gP4YrBSumsaMZP0fNBtXXFIf33RLLKEcBUKaQZ7ULUbS0sBfcjxIZ4V96OTRkCbM7hxpw==}
     engines: {node: '>=18'}
 
   unbox-primitive@1.1.0:
@@ -3994,6 +3997,8 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
+  '@kayahr/text-encoding@2.0.1': {}
+
   '@napi-rs/wasm-runtime@0.2.10':
     dependencies:
       '@emnapi/core': 1.4.3
@@ -4194,7 +4199,7 @@ snapshots:
     dependencies:
       debug: 4.4.1
       fflate: 0.8.2
-      token-types: 6.0.4
+      token-types: 6.1.0
     transitivePeerDependencies:
       - supports-color
 
@@ -5353,8 +5358,8 @@ snapshots:
     dependencies:
       '@tokenizer/inflate': 0.2.7
       strtok3: 10.3.4
-      token-types: 6.0.4
-      uint8array-extras: 1.4.0
+      token-types: 6.1.0
+      uint8array-extras: 1.4.1
     transitivePeerDependencies:
       - supports-color
 
@@ -6507,16 +6512,17 @@ snapshots:
 
   ms@2.1.3: {}
 
-  music-metadata@11.7.3:
+  music-metadata@11.8.0:
     dependencies:
+      '@kayahr/text-encoding': 2.0.1
       '@tokenizer/token': 0.3.0
       content-type: 1.0.5
       debug: 4.4.1
       file-type: 21.0.0
       media-typer: 1.1.0
       strtok3: 10.3.4
-      token-types: 6.0.4
-      uint8array-extras: 1.4.0
+      token-types: 6.1.0
+      uint8array-extras: 1.4.1
     transitivePeerDependencies:
       - supports-color
 
@@ -7336,8 +7342,9 @@ snapshots:
 
   toggle-selection@1.0.6: {}
 
-  token-types@6.0.4:
+  token-types@6.1.0:
     dependencies:
+      '@kayahr/text-encoding': 2.0.1
       '@tokenizer/token': 0.3.0
       ieee754: 1.2.1
 
@@ -7399,7 +7406,7 @@ snapshots:
 
   typescript@5.9.2: {}
 
-  uint8array-extras@1.4.0: {}
+  uint8array-extras@1.4.1: {}
 
   unbox-primitive@1.1.0:
     dependencies:
