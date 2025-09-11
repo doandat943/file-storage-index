@@ -9,36 +9,59 @@ import '../styles/globals.css'
 import '../styles/markdown-github.css'
 import '@fortawesome/fontawesome-svg-core/styles.css'
 
-// FontAwesome configuration for v3.x - using require() for compatibility
 import { config } from '@fortawesome/fontawesome-svg-core'
 config.autoAddCss = false
 
 // Use require for library to ensure proper SSR support
 const { library } = require('@fortawesome/fontawesome-svg-core')
 
-// Import all icon packages using require for stability
+// Import the most common packages using require for better compatibility
 const solidIcons = require('@fortawesome/free-solid-svg-icons')
 const regularIcons = require('@fortawesome/free-regular-svg-icons') 
 const brandIcons = require('@fortawesome/free-brands-svg-icons')
 
-// Add all icons from solid pack
-Object.keys(solidIcons).forEach(key => {
-  if (key !== 'fas' && key !== 'prefix' && solidIcons[key].iconName) {
-    library.add(solidIcons[key])
+// Add common icons that are frequently used
+const commonSolidIcons = [
+  'faSearch', 'faChevronDown', 'faDesktop', 'faThList', 'faAngleRight',
+  'faCheck', 'faPlus', 'faMinus', 'faDownload', 'faMusic', 'faArrowLeft',
+  'faArrowRight', 'faFileDownload', 'faUndo', 'faBook', 'faKey',
+  'faSignOutAlt', 'faCloud', 'faChevronCircleDown', 'faLink',
+  'faExternalLinkAlt', 'faExclamationCircle', 'faExclamationTriangle',
+  'faTh', 'faThLarge', 'faHome', 'faLanguage', 'faCircleNotch',
+  'faSun', 'faMoon', 'faPen', 'faCopy'
+]
+
+const commonRegularIcons = [
+  'faFileImage', 'faFilePdf', 'faFileWord', 'faFilePowerpoint',
+  'faFileExcel', 'faFileAudio', 'faFileVideo', 'faFileArchive',
+  'faFileCode', 'faFileAlt', 'faFile', 'faFolder', 'faCopy',
+  'faArrowAltCircleDown', 'faTrashAlt', 'faEnvelope', 'faFlag',
+  'faCheckCircle'
+]
+
+const commonBrandIcons = [
+  'faGithub', 'faTwitter', 'faFacebook', 'faInstagram', 'faLinkedin',
+  'faYoutube', 'faTelegram', 'faDiscord', 'faReddit', 'faMarkdown'
+]
+
+// Add common solid icons
+commonSolidIcons.forEach(iconName => {
+  if (solidIcons[iconName]) {
+    library.add(solidIcons[iconName])
   }
 })
 
-// Add all icons from regular pack
-Object.keys(regularIcons).forEach(key => {
-  if (key !== 'far' && key !== 'prefix' && regularIcons[key].iconName) {
-    library.add(regularIcons[key])
+// Add common regular icons
+commonRegularIcons.forEach(iconName => {
+  if (regularIcons[iconName]) {
+    library.add(regularIcons[iconName])
   }
 })
 
-// Add all icons from brand pack
-Object.keys(brandIcons).forEach(key => {
-  if (key !== 'fab' && key !== 'prefix' && brandIcons[key].iconName) {
-    library.add(brandIcons[key])
+// Add common brand icons
+commonBrandIcons.forEach(iconName => {
+  if (brandIcons[iconName]) {
+    library.add(brandIcons[iconName])
   }
 })
 
