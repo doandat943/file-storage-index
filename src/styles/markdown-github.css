@@ -826,7 +826,7 @@
   overflow: auto;
   font-size: 85%;
   line-height: 1.45;
-  background-color: #f6f8fa;
+  background-color: #f8f8f8;
   border-radius: 3px;
 }
 
@@ -1141,11 +1141,16 @@
   background-color: #0d1117;
 }
 .markdown-body.dark code {
-  background-color: #1f1f22;
+  background-color: rgba(240, 246, 252, 0.15);
+}
+.markdown-body.dark pre code,
+.markdown-body.dark pre > div > code {
+  background: transparent;
+  color: #d4d4d4;
 }
 .markdown-body.dark .highlight pre,
 .markdown-body.dark pre {
-  background-color: #1f1f22;
+  background-color: #1d1f21;
 }
 .markdown-body.dark .commit-tease-sha {
   color: #b1bac4;
@@ -1158,8 +1163,4 @@
 }
 .markdown-body.dark .blob-code-inner {
   color: #c9d1d9;
-}
-
-.markdown-body.dark pre > div > code {
-  color: #d4d4d4;
 }
