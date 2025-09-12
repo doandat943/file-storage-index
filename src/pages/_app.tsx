@@ -1,81 +1,55 @@
-import '@fortawesome/fontawesome-svg-core/styles.css'
-
-import '../styles/globals.css'
-import '../styles/markdown-github.css'
-import { Analytics } from '@vercel/analytics/react';
-import { CookiesProvider } from 'react-cookie'
-
-// Require had to be used to prevent SSR failure in Next.js
-// Related discussion: https://github.com/FortAwesome/Font-Awesome/issues/19348
-const { library, config } = require('@fortawesome/fontawesome-svg-core')
-config.autoAddCss = false
-
-import {
-  faFileImage,
-  faFilePdf,
-  faFileWord,
-  faFilePowerpoint,
-  faFileExcel,
-  faFileAudio,
-  faFileVideo,
-  faFileArchive,
-  faFileCode,
-  faFileAlt,
-  faFile,
-  faFolder,
-  faCopy,
-  faArrowAltCircleDown,
-  faTrashAlt,
-  faEnvelope,
-  faFlag,
-  faCheckCircle,
-} from '@fortawesome/free-regular-svg-icons'
-import {
-  faSearch,
-  faPen,
-  faCheck,
-  faPlus,
-  faMinus,
-  faCopy as faCopySolid,
-  faAngleRight,
-  faDownload,
-  faMusic,
-  faArrowLeft,
-  faArrowRight,
-  faFileDownload,
-  faUndo,
-  faBook,
-  faKey,
-  faSignOutAlt,
-  faCloud,
-  faChevronCircleDown,
-  faChevronDown,
-  faLink,
-  faExternalLinkAlt,
-  faExclamationCircle,
-  faExclamationTriangle,
-  faTh,
-  faThLarge,
-  faThList,
-  faHome,
-  faLanguage,
-  faCircleNotch,
-  faSun,
-  faMoon,
-  faDesktop,
-} from '@fortawesome/free-solid-svg-icons'
-import * as Icons from '@fortawesome/free-brands-svg-icons'
 
 import type { AppProps } from 'next/app'
 import NextNProgress from 'nextjs-progressbar'
 import { appWithTranslation } from 'next-i18next'
+import { Analytics } from '@vercel/analytics/react';
+import { CookiesProvider } from 'react-cookie'
 
-// import all brand icons with tree-shaking so all icons can be referenced in the app
-const iconList = Object.keys(Icons)
-  .filter(k => k !== 'fab' && k !== 'prefix')
-  .map(icon => Icons[icon])
+import '../styles/globals.css'
+import '../styles/markdown-github.css'
+import '@fortawesome/fontawesome-svg-core/styles.css'
 
-library.add(
+import { config } from '@fortawesome/fontawesome-svg-core'
+config.autoAddCss = false
+
+// Import FontAwesome library and icons
+import { library } from '@fortawesome/fontawesome-svg-core'
+import {
+  faSearch,
+  faChevronDown,
+  faDesktop,
+  faThList,
+  faAngleRight,
+  faCheck,
+  faPlus,
+  faMinus,
+  faDownload,
+  faMusic,
+  faArrowLeft,
+  faArrowRight,
+  faFileDownload,
+  faUndo,
+  faBook,
+  faKey,
+  faSignOutAlt,
+  faCloud,
+  faChevronCircleDown,
+  faLink,
+  faExternalLinkAlt,
+  faExclamationCircle,
+  faExclamationTriangle,
+  faTh,
+  faThLarge,
+  faHome,
+  faLanguage,
+  faCircleNotch,
+  faSun,
+  faMoon,
+  faPen,
+  faCopy
+} from '@fortawesome/free-solid-svg-icons'
+
+import {
   faFileImage,
   faFilePdf,
   faFileWord,
@@ -87,46 +61,95 @@ library.add(
   faFileCode,
   faFileAlt,
   faFile,
-  faFlag,
   faFolder,
-  faMusic,
-  faArrowLeft,
-  faArrowRight,
+  faCopy as faRegularCopy,
+  faArrowAltCircleDown,
+  faTrashAlt,
+  faEnvelope,
+  faFlag,
+  faCheckCircle
+} from '@fortawesome/free-regular-svg-icons'
+
+import {
+  faGithub,
+  faTwitter,
+  faFacebook,
+  faInstagram,
+  faLinkedin,
+  faYoutube,
+  faTelegram,
+  faDiscord,
+  faReddit,
+  faMarkdown
+} from '@fortawesome/free-brands-svg-icons'
+
+// Add all icons to the library
+library.add(
+  // Solid icons
+  faSearch,
+  faChevronDown,
+  faDesktop,
+  faThList,
   faAngleRight,
-  faFileDownload,
-  faCopy,
-  faCopySolid,
+  faCheck,
   faPlus,
   faMinus,
   faDownload,
-  faLink,
+  faMusic,
+  faArrowLeft,
+  faArrowRight,
+  faFileDownload,
   faUndo,
   faBook,
-  faArrowAltCircleDown,
   faKey,
-  faTrashAlt,
   faSignOutAlt,
-  faEnvelope,
   faCloud,
   faChevronCircleDown,
+  faLink,
   faExternalLinkAlt,
   faExclamationCircle,
   faExclamationTriangle,
-  faHome,
-  faCheck,
-  faCheckCircle,
-  faSearch,
-  faChevronDown,
   faTh,
   faThLarge,
-  faThList,
+  faHome,
   faLanguage,
-  faPen,
   faCircleNotch,
   faSun,
   faMoon,
-  faDesktop,
-  ...iconList
+  faPen,
+  faCopy,
+  
+  // Regular icons
+  faFileImage,
+  faFilePdf,
+  faFileWord,
+  faFilePowerpoint,
+  faFileExcel,
+  faFileAudio,
+  faFileVideo,
+  faFileArchive,
+  faFileCode,
+  faFileAlt,
+  faFile,
+  faFolder,
+  faRegularCopy,
+  faArrowAltCircleDown,
+  faTrashAlt,
+  faEnvelope,
+  faFlag,
+  faCheckCircle,
+  
+  // Brand icons
+  faGithub,
+  faTwitter,
+  faFacebook,
+  faInstagram,
+  faLinkedin,
+  faYoutube,
+  faTelegram,
+  faDiscord,
+  faReddit,
+  faMarkdown
 )
 
 function MyApp({ Component, pageProps }: AppProps) {
