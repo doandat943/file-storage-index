@@ -7,6 +7,7 @@ import { CookiesProvider } from 'react-cookie'
 
 import '../styles/globals.css'
 import '../styles/markdown-github.css'
+import 'remark-github-blockquote-alert/alert.css'
 import '@fortawesome/fontawesome-svg-core/styles.css'
 
 import { library, config } from '@fortawesome/fontawesome-svg-core'
