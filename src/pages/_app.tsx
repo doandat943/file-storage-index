@@ -9,11 +9,8 @@ import '../styles/globals.css'
 import '../styles/markdown-github.css'
 import '@fortawesome/fontawesome-svg-core/styles.css'
 
-import { config } from '@fortawesome/fontawesome-svg-core'
+import { library, config } from '@fortawesome/fontawesome-svg-core'
 config.autoAddCss = false
-
-// Use require for library to ensure proper SSR support
-const { library } = require('@fortawesome/fontawesome-svg-core')
 
 // Import the most common packages using require for better compatibility
 const solidIcons = require('@fortawesome/free-solid-svg-icons')
