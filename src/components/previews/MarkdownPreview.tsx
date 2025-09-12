@@ -2,6 +2,7 @@ import { FC, ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
+import remarkGemoji from 'remark-gemoji'
 import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
 import { remarkAlert } from 'remark-github-blockquote-alert'
@@ -65,7 +66,7 @@ const MarkdownPreview: FC<{
         <div className={`markdown-body ${resolvedTheme}`}>
           {/* Using rehypeRaw to render HTML inside Markdown is potentially dangerous, use under safe environments. (#18) */}
           <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath, remarkAlert]}
+            remarkPlugins={[remarkGfm, remarkMath, remarkAlert, remarkGemoji]}
             rehypePlugins={[rehypeKatex, rehypeRaw]}
             components={{
               img: ({ node, ...props }) => {
