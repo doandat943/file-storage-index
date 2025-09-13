@@ -822,12 +822,12 @@
 
 .markdown-body .highlight pre,
 .markdown-body pre {
-  padding: 16px;
+  padding: 12px;
   overflow: auto;
-  font-size: 85%;
+  font-size: 1em;
   line-height: 1.45;
   background-color: #f8f8f8;
-  border-radius: 3px;
+  border-radius: 5px;
 }
 
 .markdown-body pre code {
@@ -840,6 +840,43 @@
   word-wrap: normal;
   background-color: initial;
   border: 0;
+}
+
+.markdown-body .fsi-codeblock {
+  position: relative;
+}
+
+.markdown-body .fsi-copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.06);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .15s ease, background-color .15s ease, transform .1s ease;
+}
+.markdown-body .fsi-codeblock:hover .fsi-copy-btn {
+  opacity: 1;
+}
+.markdown-body .fsi-copy-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+.markdown-body .fsi-copy-btn:active {
+  transform: scale(0.98);
+}
+
+.markdown-body.dark .fsi-copy-btn {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.markdown-body.dark .fsi-copy-btn:hover {
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 .markdown-body .commit-tease-sha {

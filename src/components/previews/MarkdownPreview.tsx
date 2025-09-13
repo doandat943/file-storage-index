@@ -7,9 +7,7 @@ import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
 import { remarkAlert } from 'remark-github-blockquote-alert'
 import { useTranslation } from 'next-i18next'
-import { LightAsync as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { tomorrowNight as darkStyle } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
-import { github as lightStyle } from 'react-syntax-highlighter/dist/cjs/styles/hljs'
+import CodeBlock from '../CodeBlock'
 
 import 'katex/dist/katex.min.css'
 
@@ -37,6 +35,10 @@ const MarkdownPreview: FC<{
     if (typeof url === 'string') return url.indexOf('://') > 0 || url.indexOf('//') === 0
     return false
   }
+
+  const CodeBlockWithCopy: FC<{ language: string; code: string }> = ({ language, code }) => (
+    <CodeBlock language={language} code={code} theme={resolvedTheme === 'dark' ? 'dark' : 'light'} />
+  )
 
   if (error) {
     return (
@@ -91,13 +93,10 @@ const MarkdownPreview: FC<{
                 }
                 
                 return (
-                  <SyntaxHighlighter 
+                  <CodeBlockWithCopy 
                     language={match[1]} 
-                    style={resolvedTheme === 'dark' ? darkStyle : lightStyle} 
-                    PreTag="div"
-                  >
-                    {String(children).replace(/\n$/, '')}
-                  </SyntaxHighlighter>
+                    code={String(children).replace(/\n$/, '')}
+                  />
                 )
               }
             }}
