@@ -269,6 +269,21 @@ export default async function handler(
     } else if (cleanPath.toLowerCase().endsWith('.mp4')) {
       await handleMP4File(requestPath, cleanPath, req, res)
     } else {
+      // Force browsers to preserve the original filename when downloading
+      const rawName = cleanPath.split('/').pop() || 'file'
+      const fileName = (() => {
+        try {
+          return decodeURIComponent(rawName)
+        } catch {
+          return rawName
+        }
+      })()
+      const encodedName = encodeURIComponent(fileName)
+      res.setHeader(
+        HTTP.HEADERS.CONTENT_DISPOSITION,
+        `attachment; filename="${encodedName}"; filename*=UTF-8''${encodedName}`
+      )
+
       // Handle all other file types with streaming
       streamFile(requestPath, req, res)
     }
