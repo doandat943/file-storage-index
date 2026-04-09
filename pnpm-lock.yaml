@@ -84,8 +84,8 @@ importers:
         specifier: ^0.0.16
         version: 0.0.16(next@16.2.3(@babel/core@7.29.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)
       plyr-react:
-        specifier: ^5.1.2
-        version: 5.3.0(plyr@3.7.8)(react@19.2.5)
+        specifier: ^6.0.0
+        version: 6.0.0(plyr@3.7.8)(react@19.2.5)
       preview-office-docs:
         specifier: ^1.0.2
         version: 1.0.2(react@19.2.5)
@@ -5021,15 +5021,12 @@ packages:
   pkg-types@2.3.0:
     resolution: {integrity: sha512-SIqCzDRg0s9npO5XQ3tNZioRY1uK06lA41ynBC1YmFTmnY6FjUjVt6s4LoADmwoig1qqD0oK8h1p/8mlMx8Oig==}
 
-  plyr-react@5.3.0:
-    resolution: {integrity: sha512-m36/HrpHwg1N2rq3E31E8/kpAH55vk6qHUg17MG4uu9jbWYxnkN39lLmZQwxW7/qpDPfW5aGUJ6R3u23V0R3zA==}
+  plyr-react@6.0.0:
+    resolution: {integrity: sha512-P8M+BuQoGrCd7m6K4QwwQlcSS1E26OeXuJTAmgLx11B9UqJrdc3Ka4TFwPwF3jul4EsVxSK9Zn1ME3DV8m9gdw==}
     engines: {node: '>=16'}
     peerDependencies:
       plyr: ^3.7.7
       react: '>=16.8'
-    peerDependenciesMeta:
-      react:
-        optional: true
 
   plyr@3.7.8:
     resolution: {integrity: sha512-yG/EHDobwbB/uP+4Bm6eUpJ93f8xxHjjk2dYcD1Oqpe1EcuQl5tzzw9Oq+uVAzd2lkM11qZfydSiyIpiB8pgdA==}
@@ -6843,7 +6840,7 @@ snapshots:
   '@dxup/nuxt@0.3.2(magicast@0.5.2)':
     dependencies:
       '@dxup/unimport': 0.1.2
-      '@nuxt/kit': 4.3.1(magicast@0.5.2)
+      '@nuxt/kit': 4.4.2(magicast@0.5.2)
       chokidar: 5.0.0
       pathe: 2.0.3
       tinyglobby: 0.2.16
@@ -12331,12 +12328,11 @@ snapshots:
       pathe: 2.0.3
     optional: true
 
-  plyr-react@5.3.0(plyr@3.7.8)(react@19.2.5):
+  plyr-react@6.0.0(plyr@3.7.8)(react@19.2.5):
     dependencies:
       plyr: 3.7.8
-      react-aptor: 2.0.0(react@19.2.5)
-    optionalDependencies:
       react: 19.2.5
+      react-aptor: 2.0.0(react@19.2.5)
 
   plyr@3.7.8:
     dependencies:
