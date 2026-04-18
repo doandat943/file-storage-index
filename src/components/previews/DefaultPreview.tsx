@@ -2,7 +2,7 @@ import type { FileObject } from '../../types'
 import { FC } from 'react'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useTranslation } from 'next-i18next'
+import { useTranslation } from 'next-i18next/pages'
 
 import { getFileIcon } from '../../utils/getFileIcon'
 import { formatModifiedDateTime, humanFileSize } from '../../utils/fileDetails'

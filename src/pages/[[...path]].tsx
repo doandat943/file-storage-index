@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations'
 import { GetServerSidePropsContext } from 'next'
 import PageLayout from '../components/PageLayout'
 import FileListing from '../components/FileListing'

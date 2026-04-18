@@ -6,7 +6,7 @@ import remarkGemoji from 'remark-gemoji'
 import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
 import { remarkAlert } from 'remark-github-blockquote-alert'
-import { useTranslation } from 'next-i18next'
+import { useTranslation } from 'next-i18next/pages'
 import CodeBlock from '../CodeBlock'
 
 import 'katex/dist/katex.min.css'

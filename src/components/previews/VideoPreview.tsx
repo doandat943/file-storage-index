@@ -2,7 +2,7 @@ import type { FileObject } from '../../types'
 
 import { FC, useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/router'
-import { useTranslation } from 'next-i18next'
+import { useTranslation } from 'next-i18next/pages'
 import dynamic from 'next/dynamic'
 
 import axios from 'axios'
