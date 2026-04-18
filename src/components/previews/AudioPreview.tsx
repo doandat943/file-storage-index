@@ -3,7 +3,7 @@ import { FC, useEffect, useRef, useState } from 'react'
 
 import ReactAudioPlayer from 'react-audio-player'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useTranslation } from 'next-i18next'
+import { useTranslation } from 'next-i18next/pages'
 import { useRouter } from 'next/router'
 
 import DownloadButtonGroup from '../DownloadBtnGtoup'

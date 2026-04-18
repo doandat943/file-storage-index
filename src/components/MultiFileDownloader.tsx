@@ -1,7 +1,7 @@
 import { NextRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import JSZip from 'jszip'
-import { useTranslation } from 'next-i18next'
+import { useTranslation } from 'next-i18next/pages'
 
 import { fetcher } from '../utils/fetchWithSWR'
 import { getStoredToken } from '../utils/protectedRouteHandler'

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { FC, useState } from 'react'
-import { useTranslation } from 'next-i18next'
+import { useTranslation } from 'next-i18next/pages'
 
 import { matchProtectedRoute } from '../utils/protectedRouteHandler'
 import useCookieStorage from '../utils/useCookieStorage'

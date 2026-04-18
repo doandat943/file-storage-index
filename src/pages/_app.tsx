@@ -1,7 +1,7 @@
 
 import type { AppProps } from 'next/app'
 import NextNProgress from 'nextjs-progressbar'
-import { appWithTranslation } from 'next-i18next'
+import { appWithTranslation } from 'next-i18next/pages'
 import { Analytics } from '@vercel/analytics/react';
 import { CookiesProvider } from 'react-cookie'
 

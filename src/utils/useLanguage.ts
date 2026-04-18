@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useTranslation } from 'next-i18next'
+import { useTranslation } from 'next-i18next/pages'
 import useCookieStorage from './useCookieStorage'
 
 export const useLanguage = () => {

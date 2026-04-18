@@ -3,7 +3,7 @@ import type { FileObject } from '../../types'
 import { FC, useEffect, useRef, useState } from 'react'
 import { ReactReader } from 'react-reader'
 import { useRouter } from 'next/router'
-import { useTranslation } from 'next-i18next'
+import { useTranslation } from 'next-i18next/pages'
 
 import Loading from '../Loading'
 import DownloadButtonGroup from '../DownloadBtnGtoup'

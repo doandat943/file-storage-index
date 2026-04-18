@@ -1,5 +1,5 @@
 import { Dispatch, Fragment, SetStateAction, useRef, useState } from 'react'
-import { useTranslation } from 'next-i18next'
+import { useTranslation } from 'next-i18next/pages'
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Description, Transition, TransitionChild } from '@headlessui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useClipboard } from 'use-clipboard-copy'
