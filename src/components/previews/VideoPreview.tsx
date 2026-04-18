@@ -49,7 +49,10 @@ const VideoPlayer: FC<{
   // Verify subtitle validity before adding to config
   const [validSubtitle, setValidSubtitle] = useState(false);
   
+  // Combined effects for initialization and cleanup
   useEffect(() => {
+    setPlayerReady(true);
+    
     // Check if subtitle file exists
     if (subtitle) {
       const checkSubtitle = async () => {
@@ -57,20 +60,22 @@ const VideoPlayer: FC<{
           const response = await fetch(subtitle, { method: 'HEAD' });
           setValidSubtitle(response.ok);
         } catch (e) {
-          console.log('Subtitle file not found or inaccessible');
           setValidSubtitle(false);
         }
       };
       checkSubtitle();
     }
+    
+    return () => {
+      setPlayerReady(false);
+    };
   }, [subtitle]);
 
   // FLV handling with mpegts.js
   useEffect(() => {
     if (isFlv && mpegts && playerReady) {
       try {
-        // Get the video element after Plyr is initialized
-        const video = document.getElementById('plyr');
+        const video = document.getElementById('plyr') as HTMLVideoElement;
         if (video) {
           const flvPlayer = mpegts.createPlayer({ 
             url: videoUrl, 
@@ -90,58 +95,38 @@ const VideoPlayer: FC<{
     }
   }, [videoUrl, isFlv, mpegts, playerReady]);
 
-  // Handle component mount/unmount
-  useEffect(() => {
-    setPlayerReady(true);
-    
-    return () => {
-      setPlayerReady(false);
-    };
-  }, []);
-
   if (error) {
-    return <div className="w-full h-full flex items-center justify-center text-red-500">
-      <p>{error}</p>
-    </div>;
+    return (
+      <div className="flex h-full w-full items-center justify-center text-red-500">
+        <p>{error}</p>
+      </div>
+    );
   }
 
-  // Common plyr configs, including the video source and plyr options
-  const plyrSource: any = {
+  // Common plyr configs
+  const plyrSource: PlyrProps['source'] = {
     type: 'video',
     title: videoName,
-  };
-  
-  // Only add poster if thumbnail is valid
-  if (thumbnail) {
-    plyrSource.poster = thumbnail;
-  }
-  
-  // Add optional tracks if subtitle exists and is valid
-  if (validSubtitle) {
-    plyrSource.tracks = [{ 
+    poster: thumbnail || undefined,
+    tracks: validSubtitle ? [{ 
       kind: 'captions', 
       label: videoName, 
       src: subtitle, 
       default: true 
-    }];
-  }
+    }] : [],
+    sources: !isFlv ? [{ 
+      src: videoUrl,
+      type: getVideoMimeType(videoName)
+    }] : []
+  };
   
-  // Safe default ratio if width/height not provided
   const ratio = width && height ? `${width}:${height}` : '16:9';
   
-  const plyrOptions: any = {
+  const plyrOptions: PlyrProps['options'] = {
     ratio,
     fullscreen: { iosNative: true },
     captions: { active: true, update: true },
   };
-  
-  // Only add sources for non-FLV files
-  if (!isFlv) {
-    plyrSource.sources = [{ 
-      src: videoUrl,
-      type: getVideoMimeType(videoName)
-    }];
-  }
   
   try {
     return <Plyr 

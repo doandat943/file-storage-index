@@ -25,16 +25,18 @@ import { layouts } from './SwitchLayout'
 import Loading, { LoadingIcon } from './Loading'
 import FourOhFour from './FourOhFour'
 import Auth from './Auth'
-import TextPreview from './previews/TextPreview'
-import MarkdownPreview from './previews/MarkdownPreview'
-import CodePreview from './previews/CodePreview'
-import OfficePreview from './previews/OfficePreview'
-import AudioPreview from './previews/AudioPreview'
-import VideoPreview from './previews/VideoPreview'
-import PDFPreview from './previews/PDFPreview'
-import URLPreview from './previews/URLPreview'
-import ImagePreview from './previews/ImagePreview'
-import DefaultPreview from './previews/DefaultPreview'
+// Dynamically import all preview components to reduce initial bundle size
+const TextPreview = dynamic(() => import('./previews/TextPreview'))
+const MarkdownPreview = dynamic(() => import('./previews/MarkdownPreview'))
+const CodePreview = dynamic(() => import('./previews/CodePreview'))
+const OfficePreview = dynamic(() => import('./previews/OfficePreview'))
+const AudioPreview = dynamic(() => import('./previews/AudioPreview'))
+const VideoPreview = dynamic(() => import('./previews/VideoPreview'))
+const PDFPreview = dynamic(() => import('./previews/PDFPreview'))
+const URLPreview = dynamic(() => import('./previews/URLPreview'))
+const ImagePreview = dynamic(() => import('./previews/ImagePreview'))
+const DefaultPreview = dynamic(() => import('./previews/DefaultPreview'))
+
 import { PreviewContainer } from './previews/Containers'
 
 import FolderListLayout from './FolderListLayout'
@@ -62,8 +64,9 @@ const queryToPath = (query?: ParsedUrlQuery) => {
 }
 
 // Render the icon of a folder child (may be a file or a folder), use emoji if the name of the child contains emoji
+const cachedEmojiRegex = emojiRegex()
 const renderEmoji = (name: string) => {
-  const emoji = emojiRegex().exec(name)
+  const emoji = cachedEmojiRegex.exec(name)
   return { render: emoji && !emoji.index, emoji }
 }
 const formatChildName = (name: string) => {

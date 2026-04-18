@@ -6,8 +6,15 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head>
-          <meta name="description" content="OneDrive Vercel Index" />
+          <meta charSet="utf-8" />
+          <meta name="description" content={siteConfig.title} />
+          <meta property="og:title" content={siteConfig.title} />
+          <meta property="og:description" content="A premium file storage index powered by Next.js" />
+          <meta property="og:type" content="website" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
           <link rel="icon" href="/favicon.ico" />
+          <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+          <link rel="manifest" href="/site.webmanifest" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
           {siteConfig.googleFontLinks.map(link => (

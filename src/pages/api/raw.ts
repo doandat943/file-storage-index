@@ -89,84 +89,17 @@ function setCacheHeaders(res: NextApiResponse, fileExtension: string, isProtecte
 }
 
 /**
- * Handle M4A file request
- * @param requestPath Encoded file path
- * @param cleanPath Clean URL path
- * @param res Response object
- */
-async function handleM4AFile(requestPath: string, cleanPath: string, res: NextApiResponse): Promise<void> {
-  const fileBuffer = await readFileContent(requestPath)
-  const fileName = cleanPath.split('/').pop() || 'audio.m4a'
-  
-  res.setHeader(HTTP.HEADERS.CONTENT_TYPE, 'audio/mp4')
-  res.setHeader(HTTP.HEADERS.CONTENT_LENGTH, fileBuffer.length)
-  res.setHeader(HTTP.HEADERS.ACCEPT_RANGES, 'bytes')
-  res.setHeader(HTTP.HEADERS.CONTENT_DISPOSITION, `inline; filename="${encodeURIComponent(fileName)}"`)
-  res.status(HTTP.STATUS.OK).send(fileBuffer)
-}
-
-/**
- * Handle MP4 file request with range support
- * @param requestPath Encoded file path
- * @param cleanPath Clean URL path
- * @param req Request object
- * @param res Response object
- */
-async function handleMP4File(
-  requestPath: string, 
-  cleanPath: string, 
-  req: NextApiRequest, 
-  res: NextApiResponse
-): Promise<void> {
-  res.setHeader(HTTP.HEADERS.CONTENT_TYPE, 'video/mp4')
-  res.setHeader(HTTP.HEADERS.ACCEPT_RANGES, 'bytes')
-  
-  const fileName = cleanPath.split('/').pop() || 'video.mp4'
-  res.setHeader(HTTP.HEADERS.CONTENT_DISPOSITION, `inline; filename="${encodeURIComponent(fileName)}"`)
-  
-  // If range header exists, handle range requests
-  const rangeHeader = req.headers.range
-  if (rangeHeader) {
-    const absolutePath = resolveFilePath(requestPath)
-    const stats = await fsStat(absolutePath)
-    const fileSize = stats.size
-    
-    const range = parseRangeHeader(rangeHeader, fileSize)
-    if (range) {
-      const { start, end } = range
-      const chunkSize = end - start + 1
-      
-      res.setHeader(HTTP.HEADERS.CONTENT_RANGE, `bytes ${start}-${end}/${fileSize}`)
-      res.setHeader(HTTP.HEADERS.CONTENT_LENGTH, chunkSize)
-      res.status(HTTP.STATUS.PARTIAL_CONTENT) // Partial Content
-      
-      const fileStream = fs.createReadStream(absolutePath, { start, end })
-      fileStream.pipe(res)
-      return
-    }
-  }
-  
-  // No range header, serve entire file
-  const fileBuffer = await readFileContent(requestPath)
-  res.setHeader(HTTP.HEADERS.CONTENT_LENGTH, fileBuffer.length)
-  res.status(HTTP.STATUS.OK).send(fileBuffer)
-}
-
-/**
  * Stream file content with range support
- * @param requestPath Encoded file path
- * @param req Request object
- * @param res Response object
  */
 function streamFile(requestPath: string, req: NextApiRequest, res: NextApiResponse): void {
   const rangeHeader = req.headers.range
   
-  // Determine if this is a range request
-  const rangeData = rangeHeader ? parseRangeHeader(rangeHeader, Infinity) : null
-  const rangeInfo = rangeData ? rangeData : undefined
-  
   // Get file stream with range support
-  const { stream, size, mimeType, isRangeRequest } = streamFileContent(requestPath, rangeInfo)
+  const rangeInfo = rangeHeader ? parseRangeHeader(rangeHeader, Infinity) : undefined
+  const { stream, size, mimeType, isRangeRequest } = streamFileContent(
+    requestPath, 
+    rangeInfo || undefined
+  )
   
   // Set headers
   res.setHeader(HTTP.HEADERS.CONTENT_TYPE, mimeType)
@@ -176,45 +109,28 @@ function streamFile(requestPath: string, req: NextApiRequest, res: NextApiRespon
     const { start, end } = parseRangeHeader(rangeHeader, size) || { start: 0, end: size - 1 }
     res.setHeader(HTTP.HEADERS.CONTENT_RANGE, `bytes ${start}-${end}/${size}`)
     res.setHeader(HTTP.HEADERS.CONTENT_LENGTH, end - start + 1)
-    res.status(HTTP.STATUS.PARTIAL_CONTENT) // Partial Content
+    res.status(HTTP.STATUS.PARTIAL_CONTENT)
   } else {
     res.setHeader(HTTP.HEADERS.CONTENT_LENGTH, size)
     res.status(HTTP.STATUS.OK)
   }
   
-  // Stream the file to the response
   stream.pipe(res)
-  
-  // Handle unexpected errors
-  stream.on('error', error => {
-    console.error('Stream error:', error)
-    // The response might have already started, so we can't send an error status
-    res.end()
-  })
+  stream.on('error', () => res.end())
 }
 
 /**
- * Handle error responses with appropriate status codes and logging
- * @param error Error object
- * @param req Request object
- * @param res Response object
+ * Handle error responses
  */
 function handleError(error: any, req: NextApiRequest, res: NextApiResponse): void {
   const { path = '' } = req.query
-  
   if (error.message === 'File not found') {
-    // For optional resources (subtitles, thumbnails), return 404 without logging
     if (isOptionalResource(req)) {
       res.status(HTTP.STATUS.NOT_FOUND).json({ error: 'Optional resource not found.' })
     } else {
-      // Log and return 404 for required files
-      console.error(`Raw API error for ${path}:`, error)
       res.status(HTTP.STATUS.NOT_FOUND).json({ error: 'File not found.' })
     }
-  } else if (error.message === 'Not a file') {
-    res.status(HTTP.STATUS.BAD_REQUEST).json({ error: 'Resource is not a file.' })
   } else {
-    // Log and return 500 for other errors
     console.error(`Raw API error for ${path}:`, error)
     res.status(HTTP.STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error.' })
   }
@@ -232,21 +148,15 @@ export default async function handler(
     await runCorsMiddleware(req, res)
 
     const { path = '' } = req.query
-    if (typeof path !== 'string') {
-      res.status(HTTP.STATUS.BAD_REQUEST).json({ error: 'Path query is required.' })
-      return
-    }
-    
-    // Handle API directory access directly
-    if (path === '' || path === '/') {
+    if (typeof path !== 'string' || path === '' || path === '/') {
       res.status(HTTP.STATUS.BAD_REQUEST).json({ 
-        error: 'Direct API access is not allowed.', 
+        error: 'Invalid path.', 
         message: 'Please specify a valid file path to access.'
       })
       return
     }
-
-    // Get the clean path
+    
+    // Normalize and get clean path
     const cleanPath = pathPosix.resolve('/', pathPosix.normalize(path))
     
     // Handle protected routes
@@ -263,30 +173,27 @@ export default async function handler(
     // Get the encoded path for file system
     const requestPath = encodePath(cleanPath)
     
-    // Handle different file types
-    if (cleanPath.toLowerCase().endsWith('.m4a')) {
-      await handleM4AFile(requestPath, cleanPath, res)
-    } else if (cleanPath.toLowerCase().endsWith('.mp4')) {
-      await handleMP4File(requestPath, cleanPath, req, res)
-    } else {
-      // Force browsers to preserve the original filename when downloading
-      const rawName = cleanPath.split('/').pop() || 'file'
-      const fileName = (() => {
-        try {
-          return decodeURIComponent(rawName)
-        } catch {
-          return rawName
-        }
-      })()
-      const encodedName = encodeURIComponent(fileName)
-      res.setHeader(
-        HTTP.HEADERS.CONTENT_DISPOSITION,
-        `attachment; filename="${encodedName}"; filename*=UTF-8''${encodedName}`
-      )
+    // Set Content-Disposition to preserve filename
+    const rawName = cleanPath.split('/').pop() || 'file'
+    const fileName = (() => {
+      try {
+        return decodeURIComponent(rawName)
+      } catch {
+        return rawName
+      }
+    })()
+    const encodedName = encodeURIComponent(fileName)
+    
+    // Use 'inline' for media types to allow in-browser playback, 'attachment' for others
+    const isMedia = ['mp4', 'm4a', 'webm', 'mp3', 'wav', 'ogg', 'vtt'].includes(fileExtension)
+    res.setHeader(
+      HTTP.HEADERS.CONTENT_DISPOSITION,
+      `${isMedia ? 'inline' : 'attachment'}; filename="${encodedName}"; filename*=UTF-8''${encodedName}`
+    )
 
-      // Handle all other file types with streaming
-      streamFile(requestPath, req, res)
-    }
+    // Handle all file types with streaming and range support
+    streamFile(requestPath, req, res)
+    
   } catch (error: any) {
     handleError(error, req, res)
   }

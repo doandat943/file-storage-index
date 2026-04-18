@@ -12,15 +12,8 @@ import { getMimeType } from './mimeTypes'
 import { FILE_SYSTEM, MEDIA_TYPE } from './constants'
 import { FileObject, FolderObject } from '../types'
 
-// Promisify FS functions
-const fsReaddir = promisify(fs.readdir)
-const fsStat = promisify(fs.stat)
-const fsReadFile = promisify(fs.readFile)
-const fsExists = promisify(fs.exists)
-const fsWriteFile = promisify(fs.writeFile)
-const fsMkdir = promisify(fs.mkdir)
-const fsUnlink = promisify(fs.unlink)
-const fsRmdir = promisify(fs.rmdir)
+// Use fs.promises for modern async/await support
+const fsPromises = fs.promises
 
 // Get the absolute path to the file storage folder
 const fileStorageDir = path.resolve(process.cwd(), apiConfig.storageConfig.fileDirectory)
@@ -74,8 +67,10 @@ export class FileHandler {
    * Ensure the storage folder exists
    */
   static async ensureStorageFolder(): Promise<void> {
-    if (!fs.existsSync(fileStorageDir)) {
-      await fsMkdir(fileStorageDir, { recursive: true })
+    try {
+      await fsPromises.access(fileStorageDir)
+    } catch {
+      await fsPromises.mkdir(fileStorageDir, { recursive: true })
     }
   }
 
@@ -125,22 +120,21 @@ export class FileHandler {
    */
   static getFileInfo = withErrorHandling(async (relativePath: string): Promise<FileInfo> => {
     const absolutePath = resolveFilePath(relativePath)
-    const exists = await fsExists(absolutePath)
     
-    if (!exists) {
+    try {
+      const stats = await fsPromises.stat(absolutePath)
+      const fileName = path.basename(relativePath)
+      
+      return {
+        path: relativePath,
+        name: fileName,
+        size: stats.size,
+        mimeType: getMimeType(fileName),
+        isDirectory: stats.isDirectory(),
+        modifiedTime: stats.mtime,
+      }
+    } catch (error) {
       throw createFileSystemError.fileNotFound(relativePath)
-    }
-    
-    const stats = await fsStat(absolutePath)
-    const fileName = path.basename(relativePath)
-    
-    return {
-      path: relativePath,
-      name: fileName,
-      size: stats.size,
-      mimeType: getMimeType(fileName),
-      isDirectory: stats.isDirectory(),
-      modifiedTime: stats.mtime,
     }
   }, 'Failed to get file information')
   
@@ -151,19 +145,19 @@ export class FileHandler {
    */
   static getFileObjectInfo = withErrorHandling(async (filePath: string): Promise<FileObject> => {
     const absolutePath = resolveFilePath(filePath)
-    const exists = await fsExists(absolutePath)
     
-    if (!exists) {
-      throw createFileSystemError.fileNotFound(filePath)
+    try {
+      const stats = await fsPromises.stat(absolutePath)
+      if (stats.isDirectory()) {
+        throw createFileSystemError.notAFile(filePath)
+      }
+      return this.toFileObject(filePath, stats, path.basename(filePath))
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        throw createFileSystemError.fileNotFound(filePath)
+      }
+      throw error
     }
-    
-    const stats = await fsStat(absolutePath)
-    
-    if (stats.isDirectory()) {
-      throw createFileSystemError.notAFile(filePath)
-    }
-    
-    return this.toFileObject(filePath, stats, path.basename(filePath))
   }, 'Failed to get file info')
   
   /**
@@ -200,7 +194,7 @@ export class FileHandler {
   static readFile = withErrorHandling(async (relativePath: string): Promise<Buffer> => {
     await this.validateFile(relativePath)
     const absolutePath = resolveFilePath(relativePath)
-    return await fsReadFile(absolutePath)
+    return await fsPromises.readFile(absolutePath)
   }, 'Failed to read file')
   
   /**
@@ -259,11 +253,13 @@ export class FileHandler {
     
     // Create parent directories if they don't exist
     const dir = path.dirname(absolutePath)
-    if (!fs.existsSync(dir)) {
-      await fsMkdir(dir, { recursive: true })
+    try {
+      await fsPromises.access(dir)
+    } catch {
+      await fsPromises.mkdir(dir, { recursive: true })
     }
     
-    await fsWriteFile(absolutePath, content)
+    await fsPromises.writeFile(absolutePath, content)
   }, 'Failed to write file')
   
   /**
@@ -273,7 +269,7 @@ export class FileHandler {
   static deleteFile = withErrorHandling(async (relativePath: string): Promise<void> => {
     await this.validateFile(relativePath)
     const absolutePath = resolveFilePath(relativePath)
-    await fsUnlink(absolutePath)
+    await fsPromises.unlink(absolutePath)
   }, 'Failed to delete file')
   
   /**
@@ -285,7 +281,7 @@ export class FileHandler {
     await this.validateFolder(relativePath)
     
     const absolutePath = resolveFilePath(relativePath)
-    const files = await fsReaddir(absolutePath)
+    const files = await fsPromises.readdir(absolutePath)
     
     const results = await Promise.all(files.map(async (file) => {
       const filePath = path.join(relativePath, file)
@@ -304,17 +300,18 @@ export class FileHandler {
     await this.validateFolder(folderPath)
     
     const absolutePath = resolveFilePath(folderPath)
-    const files = await fsReaddir(absolutePath)
+    const entries = await fsPromises.readdir(absolutePath, { withFileTypes: true })
     
-    const itemPromises = files.map(async (file) => {
+    const itemPromises = entries.map(async (entry) => {
+      const file = entry.name
       const filePath = path.join(absolutePath, file)
       const relativePath = path.join(folderPath, file)
-      const stats = await fsStat(filePath)
       
-      if (stats.isDirectory()) {
+      if (entry.isDirectory()) {
         // It's a folder
+        const stats = await fsPromises.stat(filePath)
         const folderSize = await this.calculateFolderSize(relativePath)
-        const childItems = await fsReaddir(filePath)
+        const childItems = await fsPromises.readdir(filePath)
         
         return {
           id: Buffer.from(relativePath).toString('base64'),
@@ -327,6 +324,7 @@ export class FileHandler {
         }
       } else {
         // It's a file
+        const stats = await fsPromises.stat(filePath)
         return this.toFileObject(relativePath, stats, file)
       }
     })
@@ -346,7 +344,7 @@ export class FileHandler {
    */
   static createFolder = withErrorHandling(async (relativePath: string): Promise<void> => {
     const absolutePath = resolveFilePath(relativePath)
-    await fsMkdir(absolutePath, { recursive: true })
+    await fsPromises.mkdir(absolutePath, { recursive: true })
   }, 'Failed to create folder')
   
   /**
@@ -361,23 +359,23 @@ export class FileHandler {
     
     if (recursive) {
       // Read folder contents
-      const files = await fsReaddir(absolutePath)
+      const entries = await fsPromises.readdir(absolutePath, { withFileTypes: true })
       
       // Delete all files and subfolders
-      for (const file of files) {
-        const filePath = path.join(absolutePath, file)
-        const stats = await fsStat(filePath)
+      for (const entry of entries) {
+        const filePath = path.join(absolutePath, entry.name)
+        const relPath = path.join(relativePath, entry.name)
         
-        if (stats.isDirectory()) {
-          await this.deleteFolder(path.join(relativePath, file), true)
+        if (entry.isDirectory()) {
+          await this.deleteFolder(relPath, true)
         } else {
-          await fsUnlink(filePath)
+          await fsPromises.unlink(filePath)
         }
       }
     }
     
     // Now delete the empty folder
-    await fsRmdir(absolutePath)
+    await fsPromises.rmdir(absolutePath)
   }, 'Failed to delete folder')
   
   /**
@@ -387,32 +385,27 @@ export class FileHandler {
    * @returns Folder size in bytes
    */
   static calculateFolderSize = withErrorHandling(async (relativePath: string, recursive = false): Promise<number> => {
-    const fileInfo = await this.getFileInfo(relativePath)
-    
-    if (!fileInfo.isDirectory) {
-      return fileInfo.size
-    }
-    
     const absolutePath = resolveFilePath(relativePath)
-    const files = await fsReaddir(absolutePath)
+    const entries = await fsPromises.readdir(absolutePath, { withFileTypes: true })
     
-    if (files.length === 0) {
+    if (entries.length === 0) {
       return 0
     }
     
     let size = 0
-    for (const file of files) {
-      const filePath = path.join(absolutePath, file)
-      const stats = await fsStat(filePath)
+    for (const entry of entries) {
+      const filePath = path.join(absolutePath, entry.name)
+      const relPath = path.join(relativePath, entry.name)
       
-      if (stats.isDirectory()) {
+      if (entry.isDirectory()) {
         if (recursive) {
-          size += await this.calculateFolderSize(path.join(relativePath, file), true)
+          size += await this.calculateFolderSize(relPath, true)
         } else {
           // For directories, use nominal size when non-recursive
           size += FILE_SYSTEM.STANDARD_DIRECTORY_SIZE
         }
       } else {
+        const stats = await fsPromises.stat(filePath)
         size += stats.size
       }
     }
@@ -429,9 +422,10 @@ export class FileHandler {
     // Decode the base64 ID to get the relative path
     const relativePath = Buffer.from(id, 'base64').toString('utf-8')
     const absolutePath = resolveFilePath(relativePath)
-    const exists = await fsExists(absolutePath)
     
-    if (!exists) {
+    try {
+      await fsPromises.access(absolutePath)
+    } catch {
       throw createFileSystemError.itemNotFound(relativePath)
     }
     
