@@ -4,6 +4,7 @@ import { FC, useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/router'
 import { useTranslation } from 'next-i18next/pages'
 import dynamic from 'next/dynamic'
+import { PlyrProps, APITypes } from 'plyr-react'
 
 import axios from 'axios'
 import toast from 'react-hot-toast'
@@ -21,7 +22,7 @@ import Loading from '../Loading'
 import CustomEmbedLinkMenu from '../CustomEmbedLinkMenu'
 
 // Dynamic import of Plyr with ssr: false to ensure it's only loaded on the client side
-const Plyr = dynamic(() => import('plyr-react'), { 
+const Plyr = dynamic(() => import('plyr-react').then(mod => mod.Plyr), { 
   ssr: false,
   loading: () => <div className="h-full w-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
     <Loading loadingText="Loading video player..." />
@@ -43,7 +44,7 @@ const VideoPlayer: FC<{
 }> = ({ videoName, videoUrl, width, height, thumbnail, subtitle, isFlv, mpegts }) => {
   const [playerReady, setPlayerReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const playerRef = useRef(null);
+  const playerRef = useRef<APITypes>(null);
 
   // Verify subtitle validity before adding to config
   const [validSubtitle, setValidSubtitle] = useState(false);
@@ -128,7 +129,7 @@ const VideoPlayer: FC<{
   // Safe default ratio if width/height not provided
   const ratio = width && height ? `${width}:${height}` : '16:9';
   
-  const plyrOptions: Plyr.Options = {
+  const plyrOptions: any = {
     ratio,
     fullscreen: { iosNative: true },
     captions: { active: true, update: true },
@@ -145,7 +146,7 @@ const VideoPlayer: FC<{
   try {
     return <Plyr 
       id="plyr" 
-      source={plyrSource as Plyr.SourceInfo} 
+      source={plyrSource} 
       options={plyrOptions} 
       ref={playerRef}
     />;
