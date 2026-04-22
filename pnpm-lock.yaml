@@ -37,7 +37,7 @@ importers:
         version: 2.1.0
       axios:
         specifier: ^1.2.6
-        version: 1.15.1
+        version: 1.15.2
       cors:
         specifier: ^2.8.5
         version: 2.8.6
@@ -2602,8 +2602,8 @@ packages:
     resolution: {integrity: sha512-Xm7bpRXnDSX2YE2YFfBk2FnF0ep6tmG7xPh8iHee8MIcrgq762Nkce856dYtJYLkuIoYZvGfTs/PbZhideTcEg==}
     engines: {node: '>=4'}
 
-  axios@1.15.1:
-    resolution: {integrity: sha512-WOG+Jj8ZOvR0a3rAn+Tuf1UQJRxw5venr6DgdbJzngJE3qG7X0kL83CZGpdHMxEm+ZK3seAbvFsw4FfOfP9vxg==}
+  axios@1.15.2:
+    resolution: {integrity: sha512-wLrXxPtcrPTsNlJmKjkPnNPK2Ihe0hn0wGSaTEiHRPxwjvJwT3hKmXF4dpqxmPO9SoNb2FsYXj/xEo0gHN+D5A==}
 
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -2644,8 +2644,8 @@ packages:
       bare-buffer:
         optional: true
 
-  bare-os@3.8.7:
-    resolution: {integrity: sha512-G4Gr1UsGeEy2qtDTZwL7JFLo2wapUarz7iTMcYcMFdS89AIQuBoyjgXZz0Utv7uHs3xA9LckhVbeBi8lEQrC+w==}
+  bare-os@3.9.0:
+    resolution: {integrity: sha512-JTjuZyNIDpw+GytMO4a6TK1VXdVKKJr6DRxEHasyuYyShV2deuiHJK/ahGZlebc+SG0/wJCB9XK8gprBGDFi/Q==}
     engines: {bare: '>=1.14.0'}
 
   bare-path@3.0.0:
@@ -8882,7 +8882,7 @@ snapshots:
 
   axe-core@4.10.3: {}
 
-  axios@1.15.1:
+  axios@1.15.2:
     dependencies:
       follow-redirects: 1.16.0
       form-data: 4.0.5
@@ -8914,12 +8914,12 @@ snapshots:
       - react-native-b4a
     optional: true
 
-  bare-os@3.8.7:
+  bare-os@3.9.0:
     optional: true
 
   bare-path@3.0.0:
     dependencies:
-      bare-os: 3.8.7
+      bare-os: 3.9.0
     optional: true
 
   bare-stream@2.13.0(bare-events@2.8.2):
